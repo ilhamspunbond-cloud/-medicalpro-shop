@@ -93,7 +93,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h3 class="font-black text-base text-yellow-300">Asisten Layanan Pelanggan AI</h3>
-                            <span class="bg-emerald-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">Memori Aktif 🧠</span>
+                            <span class="bg-emerald-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">Memori Global 🧠</span>
                         </div>
                         <p class="text-xs text-indigo-200">Taip atau cakap terus dengan mikrofon</p>
                     </div>
@@ -103,14 +103,14 @@
                 </button>
             </div>
 
-            <!-- Kotak Paparan Riwayat Obrolan AI -->
+            <!-- Kotak Riwayat Obrolan AI -->
             <div id="aiChatHistoryContainer" class="bg-black/35 backdrop-blur-md rounded-2xl p-4 text-xs sm:text-sm leading-relaxed border border-indigo-500/30 text-indigo-100 space-y-3 max-h-60 overflow-y-auto">
                 <div>🤖 <b>Asisten:</b> Memuatkan sistem perbualan...</div>
             </div>
 
             <form onsubmit="handleCustomerAiQuery(event)" class="flex gap-2">
                 <div class="relative flex-1 flex items-center">
-                    <input type="text" id="custAiInput" placeholder="Tanya Asisten (Cth: Apa khasiat serbuk belimbing wuluh?)..." class="w-full bg-white/10 border border-indigo-400/30 text-white placeholder-indigo-300/60 p-2.5 pr-10 rounded-xl text-xs sm:text-sm focus:outline-none">
+                    <input type="text" id="custAiInput" placeholder="Tanya Asisten (Cth: Apa khasiat produk ini?)..." class="w-full bg-white/10 border border-indigo-400/30 text-white placeholder-indigo-300/60 p-2.5 pr-10 rounded-xl text-xs sm:text-sm focus:outline-none">
                     <button type="button" id="micBtn" onclick="toggleSpeechRecognition()" title="Cakap dengan AI" class="absolute right-2.5 text-indigo-300 hover:text-white transition text-base">
                         <i class="fa-solid fa-microphone"></i>
                     </button>
@@ -208,7 +208,7 @@
 
     </main>
 
-    <!-- Script Firebase & Logik Pintar AI Berterusan (Memory & Clean Speech) -->
+    <!-- Script Firebase & Logik Pintar AI Terpusat -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyD_LWsMJL2j8IkeDw0O1e6Gp3gvvvixuzk",
@@ -231,20 +231,20 @@
         let fetchedProducts = [];
         let fetchedAdmins = [];
         let lastSpokenText = "";
-        let chatConversationHistory = []; // Menyimpan riwayat perbualan dari awal sampai akhir
+        let chatConversationHistory = []; 
         let recognition = null;
         let isRecording = false;
 
-        // Fungsi Membersihkan Simbol/Kode di Deskripsi agar AI Mengomongnya Seperti Manusia Biasa
+        // Membersihkan simbol/kode dari database agar AI berbicara lancar seperti manusia
         function cleanTextForSpeech(text) {
             if (!text) return "";
             return text
-                .replace(/[-–—_#*~`[\]()/{}]/g, ' ') // Buang tanda hubung, garis, kurungan, bintang, dll.
-                .replace(/\s+/g, ' ')               // Rapikan spasi berlebihan
+                .replace(/[-–—_#*~`[\]()/{}]/g, ' ') 
+                .replace(/\s+/g, ' ')               
                 .trim();
         }
 
-        // Fungsi Text-to-Speech (AI Bercakap Suara)
+        // Fungsi Text-to-Speech (AI Bersuara)
         function speakText(text) {
             let cleanSpeech = cleanTextForSpeech(text);
             lastSpokenText = cleanSpeech;
@@ -258,7 +258,7 @@
         }
         function speakLastAiMessage() { if (lastSpokenText) speakText(lastSpokenText); }
 
-        // Fungsi Speech-to-Text (Pelanggan Cakap Pakai Mikrofon)
+        // Fungsi Speech-to-Text (Pelanggan Bercakap dengan Mikrofon)
         function toggleSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
@@ -563,7 +563,20 @@
             window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
         }
 
-        // --- SISTEM AI PINTAR: MEMORI PERBUALAN + DETAIL/RINGKAS + BERSIH KODE ---
+        // --- MENYIMPAN KOSAKATA & PERCAKAPAN KE CLOUD (GLOBAL MEMORY) ---
+        function saveConversationToCloud(customerText, aiResponseText) {
+            if (!db) return;
+            db.collection("ai_global_vocabulary").add({
+                customerQuery: customerText,
+                aiReply: aiResponseText,
+                customerName: customerProfile ? customerProfile.name : "Anonim",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp()
+            }).catch((error) => {
+                console.error("Gagal simpan memori global: ", error);
+            });
+        }
+
+        // --- SISTEM AI PINTAR: MEMORI + DETAIL/RINGKAS + BERSIH KODE ---
         function handleCustomerAiQuery(e) {
             e.preventDefault();
             const inputVal = document.getElementById('custAiInput').value;
@@ -574,13 +587,11 @@
             const lowerInput = text.toLowerCase().trim();
             if (!lowerInput) return;
 
-            // Simpan soalan user ke riwayat memori
             chatConversationHistory.push({ sender: 'user', text: text });
 
             let responseText = "";
             let matchedProduct = null;
 
-            // 1. Cari produk spesifik berdasarkan input customer
             for (let p of fetchedProducts) {
                 let pName = p.name ? p.name.toLowerCase() : "";
                 if (lowerInput.split(" ").some(keyword => keyword.length > 2 && pName.includes(keyword))) {
@@ -589,7 +600,6 @@
                 }
             }
 
-            // 2. Logik Respons: Detail jika tanya produk spesifik, Ringkas jika rekomendasi/penawaran lain
             if (matchedProduct) {
                 let cleanDesc = cleanTextForSpeech(matchedProduct.desc || "Produk herba berkualiti tinggi keluaran Medicalpro.");
                 let stockInfo = matchedProduct.stock > 0 ? `Stok tersedia ada ${matchedProduct.stock} unit.` : `Maaf, stok sedang habis.`;
@@ -597,8 +607,7 @@
                 responseText = `Ya ${customerProfile.gender} ${customerProfile.name}, mengenai <b>${matchedProduct.name}</b>, harganya RM ${parseFloat(matchedProduct.price).toFixed(2)}. ${stockInfo} Khasiat utamanya: ${cleanDesc}. Ada lagi yang ingin anda ketahui?`;
             } 
             else if (lowerInput.includes('lain') || lowerInput.includes('rekomendasi') || lowerInput.includes('cadang') || lowerInput.includes('apa lagi')) {
-                // Penawaran produk lain secara RINGKAS
-                let otherProducts = fetchedProducts.slice(0, 3).map(p => p.name).join(', cair ');
+                let otherProducts = fetchedProducts.slice(0, 3).map(p => p.name).join(', ');
                 responseText = `Selain itu ${customerProfile.gender}, kami juga ada produk pilihan seperti ${otherProducts}. Semuanya bagus untuk kesihatan harian. Berminat untuk cuba?`;
             }
             else if (lowerInput.includes('letih') || lowerInput.includes('tenaga') || lowerInput.includes('lesu')) {
@@ -608,17 +617,16 @@
                 responseText = `Untuk kawalan kesihatan dalaman, penawar herba belimbing wuluh sangat membantu. Anda boleh semak butirannya di katalog bawah.`;
             } 
             else {
-                // Jawapan generik berkesinambungan dengan riwayat sebelumnya
                 responseText = `Baik ${customerProfile.gender} ${customerProfile.name}. Mengenai "${text}", anda boleh pilih produk terus di katalog bawah atau beritahu saya jika perlukan cadangan produk kesihatan yang lain.`;
             }
 
-            // Simpan jawapan AI ke memori percakapan
             chatConversationHistory.push({ sender: 'ai', text: responseText });
-            
-            // Paparkan ke skrin riwayat & sebutkan suara (tanpa kode/simbol)
             renderChatHistory();
             speakText(responseText);
             document.getElementById('custAiInput').value = "";
+
+            // Simpan kosakata dan percakapan ke Cloud Firestore secara global lintas HP
+            saveConversationToCloud(text, responseText);
         }
 
         window.addEventListener('DOMContentLoaded', () => {
