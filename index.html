@@ -93,7 +93,7 @@
                     <div>
                         <div class="flex items-center gap-2">
                             <h3 class="font-black text-base text-yellow-300">Asisten Layanan Pelanggan AI</h3>
-                            <span class="bg-emerald-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">Suara Aktif 🎙️</span>
+                            <span class="bg-emerald-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">Memori Aktif 🧠</span>
                         </div>
                         <p class="text-xs text-indigo-200">Taip atau cakap terus dengan mikrofon</p>
                     </div>
@@ -103,13 +103,14 @@
                 </button>
             </div>
 
-            <div id="aiCustomerResponseBox" class="bg-black/35 backdrop-blur-md rounded-2xl p-4 text-xs sm:text-sm leading-relaxed border border-indigo-500/30 text-indigo-100">
-                Memuatkan sambutan...
+            <!-- Kotak Paparan Riwayat Obrolan AI -->
+            <div id="aiChatHistoryContainer" class="bg-black/35 backdrop-blur-md rounded-2xl p-4 text-xs sm:text-sm leading-relaxed border border-indigo-500/30 text-indigo-100 space-y-3 max-h-60 overflow-y-auto">
+                <div>🤖 <b>Asisten:</b> Memuatkan sistem perbualan...</div>
             </div>
 
             <form onsubmit="handleCustomerAiQuery(event)" class="flex gap-2">
                 <div class="relative flex-1 flex items-center">
-                    <input type="text" id="custAiInput" placeholder="Tanya Asisten (Cth: Apa khasiat serbuk belimbing buluh?)..." class="w-full bg-white/10 border border-indigo-400/30 text-white placeholder-indigo-300/60 p-2.5 pr-10 rounded-xl text-xs sm:text-sm focus:outline-none">
+                    <input type="text" id="custAiInput" placeholder="Tanya Asisten (Cth: Apa khasiat serbuk belimbing wuluh?)..." class="w-full bg-white/10 border border-indigo-400/30 text-white placeholder-indigo-300/60 p-2.5 pr-10 rounded-xl text-xs sm:text-sm focus:outline-none">
                     <button type="button" id="micBtn" onclick="toggleSpeechRecognition()" title="Cakap dengan AI" class="absolute right-2.5 text-indigo-300 hover:text-white transition text-base">
                         <i class="fa-solid fa-microphone"></i>
                     </button>
@@ -207,7 +208,7 @@
 
     </main>
 
-    <!-- Script Firebase & Logik Pintar AI Produk -->
+    <!-- Script Firebase & Logik Pintar AI Berterusan (Memory & Clean Speech) -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyD_LWsMJL2j8IkeDw0O1e6Gp3gvvvixuzk",
@@ -230,15 +231,26 @@
         let fetchedProducts = [];
         let fetchedAdmins = [];
         let lastSpokenText = "";
+        let chatConversationHistory = []; // Menyimpan riwayat perbualan dari awal sampai akhir
         let recognition = null;
         let isRecording = false;
 
-        // Fungsi Text-to-Speech (AI Bercakap)
+        // Fungsi Membersihkan Simbol/Kode di Deskripsi agar AI Mengomongnya Seperti Manusia Biasa
+        function cleanTextForSpeech(text) {
+            if (!text) return "";
+            return text
+                .replace(/[-–—_#*~`[\]()/{}]/g, ' ') // Buang tanda hubung, garis, kurungan, bintang, dll.
+                .replace(/\s+/g, ' ')               // Rapikan spasi berlebihan
+                .trim();
+        }
+
+        // Fungsi Text-to-Speech (AI Bercakap Suara)
         function speakText(text) {
-            lastSpokenText = text;
+            let cleanSpeech = cleanTextForSpeech(text);
+            lastSpokenText = cleanSpeech;
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text.replace(/[*_#]/g, ''));
+                const utterance = new SpeechSynthesisUtterance(cleanSpeech);
                 utterance.lang = 'ms-MY';
                 utterance.rate = 1.0;
                 window.speechSynthesis.speak(utterance);
@@ -246,11 +258,11 @@
         }
         function speakLastAiMessage() { if (lastSpokenText) speakText(lastSpokenText); }
 
-        // Fungsi Speech-to-Text (Pelanggan Bercakap kepada AI)
+        // Fungsi Speech-to-Text (Pelanggan Cakap Pakai Mikrofon)
         function toggleSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
-                alert("Maaf, pelayar (browser) anda tidak menyokong pengecaman suara.");
+                alert("Maaf, pelayar anda tidak menyokong pengecaman suara.");
                 return;
             }
 
@@ -268,8 +280,6 @@
 
                 recognition.onresult = (event) => {
                     let speechToText = event.results[0][0].transcript;
-                    // Bersihkan pengulangan kata yang sering terjadi pada speech recognition (cth: "serbuk untuk apa serbuk untuk apa")
-                    speechToText = cleanRepeatedSpeech(speechToText);
                     document.getElementById('custAiInput').value = speechToText;
                     handleCustomerAiQueryByText(speechToText);
                 };
@@ -280,18 +290,6 @@
 
             if (isRecording) { recognition.stop(); } 
             else { recognition.start(); }
-        }
-
-        // Membersihkan teks ucapan yang berulang-ulang dari mikrofon
-        function cleanRepeatedSpeech(text) {
-            let words = text.split(" ");
-            let uniqueWords = [];
-            let halfLen = Math.floor(words.length / 2);
-            // Jika separuh ayat pertama sama persis dengan separuh kedua, potong separuh
-            if (halfLen > 2 && words.slice(0, halfLen).join(" ") === words.slice(halfLen, halfLen * 2).join(" ")) {
-                return words.slice(0, halfLen).join(" ");
-            }
-            return text;
         }
 
         function stopMicUI() {
@@ -326,10 +324,26 @@
             let name = customerProfile.name || "Pelanggan";
             let timeGreeting = getTimedGreeting();
             
-            let greeting = `${timeGreeting} ${title} ${name}, selamat datang ke Kedai Rasmi Medicalpro Shop! Saya Asisten AI anda. Anda boleh tanya apa saja mengenai khasiat produk herba kami di katalog bawah.`;
+            let greeting = `${timeGreeting} ${title} ${name}, selamat datang ke Kedai Rasmi Medicalpro Shop! Saya Asisten AI anda. Ada produk herba yang anda cari atau ingin saya bantu jelaskan khasiatnya?`;
             
-            document.getElementById('aiCustomerResponseBox').innerHTML = `🤖 <b>Asisten Layanan Pelanggan:</b> ${greeting}`;
+            chatConversationHistory.push({ sender: 'ai', text: greeting });
+            renderChatHistory();
             speakText(greeting);
+        }
+
+        function renderChatHistory() {
+            const container = document.getElementById('aiChatHistoryContainer');
+            if (!container) return;
+            container.innerHTML = "";
+
+            chatConversationHistory.forEach(chat => {
+                if (chat.sender === 'user') {
+                    container.innerHTML += `<div class="text-right"><span class="bg-indigo-600 text-white px-3 py-1.5 rounded-xl inline-block text-xs"><b>Anda:</b> ${chat.text}</span></div>`;
+                } else {
+                    container.innerHTML += `<div>🤖 <b>Asisten:</b> ${chat.text}</div>`;
+                }
+            });
+            container.scrollTop = container.scrollHeight;
         }
 
         function saveCustomerProfile() {
@@ -549,7 +563,7 @@
             window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
         }
 
-        // --- SISTEM AI PINTAR MEMBACA PRODUK & KHASIAT DARI DATABASE ---
+        // --- SISTEM AI PINTAR: MEMORI PERBUALAN + DETAIL/RINGKAS + BERSIH KODE ---
         function handleCustomerAiQuery(e) {
             e.preventDefault();
             const inputVal = document.getElementById('custAiInput').value;
@@ -557,43 +571,52 @@
         }
 
         function handleCustomerAiQueryByText(text) {
-            const respBox = document.getElementById('aiCustomerResponseBox');
             const lowerInput = text.toLowerCase().trim();
             if (!lowerInput) return;
+
+            // Simpan soalan user ke riwayat memori
+            chatConversationHistory.push({ sender: 'user', text: text });
 
             let responseText = "";
             let matchedProduct = null;
 
-            // 1. Semak sama ada pertanyaan menyebut produk yang ada dalam fetchedProducts (berdasarkan nama atau khasiat)
+            // 1. Cari produk spesifik berdasarkan input customer
             for (let p of fetchedProducts) {
                 let pName = p.name ? p.name.toLowerCase() : "";
-                let pDesc = p.desc ? p.desc.toLowerCase() : ""; // jika ada field deskripsi/khasiat
-                
-                if (lowerInput.split(" ").some(keyword => keyword.length > 2 && (pName.includes(keyword) || pDesc.includes(keyword)))) {
+                if (lowerInput.split(" ").some(keyword => keyword.length > 2 && pName.includes(keyword))) {
                     matchedProduct = p;
                     break;
                 }
             }
 
-            // Jika pelanggan bertanya khusus mengenai produk/khasiat yang ditemui di database
+            // 2. Logik Respons: Detail jika tanya produk spesifik, Ringkas jika rekomendasi/penawaran lain
             if (matchedProduct) {
+                let cleanDesc = cleanTextForSpeech(matchedProduct.desc || "Produk herba berkualiti tinggi keluaran Medicalpro.");
                 let stockInfo = matchedProduct.stock > 0 ? `Stok tersedia ada ${matchedProduct.stock} unit.` : `Maaf, stok sedang habis.`;
-                responseText = `Ya ${customerProfile.gender} ${customerProfile.name}, mengenai <b>${matchedProduct.name}</b>: Harganya adalah RM ${parseFloat(matchedProduct.price).toFixed(2)}. ${stockInfo} ${matchedProduct.desc ? 'Khasiat/Keterangan: ' + matchedProduct.desc : 'Produk herba berkualiti tinggi keluaran Medicalpro.'}`;
+                
+                responseText = `Ya ${customerProfile.gender} ${customerProfile.name}, mengenai <b>${matchedProduct.name}</b>, harganya RM ${parseFloat(matchedProduct.price).toFixed(2)}. ${stockInfo} Khasiat utamanya: ${cleanDesc}. Ada lagi yang ingin anda ketahui?`;
             } 
-            // Jawapan alternatif berasaskan kata kunci kesihatan umum
+            else if (lowerInput.includes('lain') || lowerInput.includes('rekomendasi') || lowerInput.includes('cadang') || lowerInput.includes('apa lagi')) {
+                // Penawaran produk lain secara RINGKAS
+                let otherProducts = fetchedProducts.slice(0, 3).map(p => p.name).join(', cair ');
+                responseText = `Selain itu ${customerProfile.gender}, kami juga ada produk pilihan seperti ${otherProducts}. Semuanya bagus untuk kesihatan harian. Berminat untuk cuba?`;
+            }
             else if (lowerInput.includes('letih') || lowerInput.includes('tenaga') || lowerInput.includes('lesu')) {
-                responseText = `Untuk mengatasi keletihan, ${customerProfile.gender} ${customerProfile.name}, kami sangat mencadangkan produk herba penambah tenaga berasaskan daun belimbing buluh yang boleh disemak di katalog kami di bawah.`;
-            } else if (lowerInput.includes('darah tinggi') || lowerInput.includes('kencing manis') || lowerInput.includes('gula')) {
-                responseText = `Berdasarkan rujukan kesihatan herba kami, produk berkaitan penawar semulajadi belimbing buluh sangat membantu mengawal tekanan darah dan tahap gula. Sila lihat pilihan produk di katalog.`;
-            } else if (lowerInput.includes('harga') || lowerInput.includes('senarai') || lowerInput.includes('produk')) {
-                responseText = `Semua senarai produk terkini berserta harga real-time boleh ${customerProfile.gender} lihat terus di bahagian katalog produk di bawah ya!`;
-            } else {
-                // Jawapan generik pintar yang merujuk kepada senarai produk aktif
-                let prodNames = fetchedProducts.map(p => p.name).join(', ');
-                responseText = `Terima kasih ${customerProfile.gender} ${customerProfile.name}. Mengenai pertanyaan "${text}", produk rasmi yang tersedia di kedai kami merangkumi: ${prodNames ? prodNames : 'pelbagai produk herba kesihatan'}. Sila pilih di katalog bawah atau nyatakan nama produk tertentu untuk info lanjut!`;
+                responseText = `Untuk masalah keletihan, ${customerProfile.gender} ${customerProfile.name}, kami ada produk penambah tenaga semulajadi. Mau saya kongsikan senarai produknya?`;
+            } 
+            else if (lowerInput.includes('darah tinggi') || lowerInput.includes('kencing manis') || lowerInput.includes('gula')) {
+                responseText = `Untuk kawalan kesihatan dalaman, penawar herba belimbing wuluh sangat membantu. Anda boleh semak butirannya di katalog bawah.`;
+            } 
+            else {
+                // Jawapan generik berkesinambungan dengan riwayat sebelumnya
+                responseText = `Baik ${customerProfile.gender} ${customerProfile.name}. Mengenai "${text}", anda boleh pilih produk terus di katalog bawah atau beritahu saya jika perlukan cadangan produk kesihatan yang lain.`;
             }
 
-            respBox.innerHTML = `🤖 <b>Asisten Layanan Pelanggan (Anda tanya: "${text}"):</b><br>${responseText}`;
+            // Simpan jawapan AI ke memori percakapan
+            chatConversationHistory.push({ sender: 'ai', text: responseText });
+            
+            // Paparkan ke skrin riwayat & sebutkan suara (tanpa kode/simbol)
+            renderChatHistory();
             speakText(responseText);
             document.getElementById('custAiInput').value = "";
         }
