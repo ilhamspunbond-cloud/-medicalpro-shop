@@ -1,7 +1,12 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-    <link rel="icon" type="image/png" href="Logopit_1745513395623.png">
+    <!-- Tetapan Ikon & PWA dengan Logo Keranjang Baru -->
+    <link rel="icon" type="image/png" href="shop-logo.png">
+    <link rel="apple-touch-icon" href="shop-logo.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#059669">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Kedai & Katalog Rasmi Medicalpro</title>
@@ -15,8 +20,10 @@
     <div id="customerProfileModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
         <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl space-y-4 border-2 border-emerald-500">
             <div class="text-center">
-                <span class="text-4xl">🛍️</span>
-                <h3 class="text-lg font-bold text-emerald-900 mt-2">Selamat Datang ke Kedai Medicalpro</h3>
+                <div class="w-16 h-16 rounded-full bg-emerald-100 mx-auto flex items-center justify-center overflow-hidden border-2 border-emerald-500 shadow-sm mb-2">
+                    <img src="shop-logo.png" alt="Logo" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentNode.innerHTML='🌱';">
+                </div>
+                <h3 class="text-lg font-bold text-emerald-900 mt-1">Selamat Datang ke Kedai Medicalpro</h3>
                 <p class="text-xs text-slate-500">Sila masukkan butiran anda untuk mula memesan.</p>
             </div>
             <div class="space-y-3">
@@ -55,7 +62,7 @@
     <header class="bg-yellow-400 text-blue-900 shadow-md border-b-4 border-yellow-500">
         <div class="max-w-5xl mx-auto px-4 py-4 flex flex-col items-center text-center gap-2">
             <div class="w-16 h-16 rounded-full bg-yellow-400 flex items-center justify-center font-bold text-2xl overflow-hidden border-2 border-yellow-500 shadow-sm">
-                <img src="Logopit_1745513395623.png" alt="Logo" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentNode.innerHTML='🌱';">
+                <img src="shop-logo.png" alt="Logo" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentNode.innerHTML='🌱';">
             </div>
             <div>
                 <h1 class="text-xl font-black tracking-wide text-blue-900 uppercase">KEDAI RASMI MEDICALPRO</h1>
@@ -154,225 +161,3 @@
         </section>
 
     </main>
-
-    <!-- Script Firebase & Logik Pelanggan -->
-    <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyD_LWsMJL2j8IkeDw0O1e6Gp3gvvvixuzk",
-            authDomain: "kebun-belimbing-buluh-medical.firebaseapp.com",
-            projectId: "kebun-belimbing-buluh-medical",
-            storageBucket: "kebun-belimbing-buluh-medical.firebasestorage.app",
-            messagingSenderId: "101006363434",
-            appId: "1:101006363434:web:ef0f5360e0e47c105f2c53",
-            measurementId: "G-5CX6N1K1GD"
-        };
-        
-        let db = null;
-        try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
-        } catch(e) {}
-
-        let customerProfile = JSON.parse(localStorage.getItem('medicalpro_customer_profile')) || null;
-        let fetchedProducts = [];
-        let fetchedAdmins = [];
-
-        function checkCustomerProfile() {
-            if (!customerProfile || !customerProfile.name) {
-                document.getElementById('customerProfileModal').classList.remove('hidden');
-            } else {
-                applyCustomerBadge();
-            }
-        }
-
-        function saveCustomerProfile() {
-            const name = document.getElementById('custName').value.trim();
-            const phone = document.getElementById('custPhone').value.trim();
-            const address = document.getElementById('custAddress').value.trim();
-            const gender = document.getElementById('custGender').value;
-
-            if (!name || !phone || !address) {
-                alert("Sila lengkapkan nama, nombor WhatsApp, dan alamat anda!");
-                return;
-            }
-
-            customerProfile = { name, phone, address, gender };
-            localStorage.setItem('medicalpro_customer_profile', JSON.stringify(customerProfile));
-            document.getElementById('customerProfileModal').classList.add('hidden');
-            applyCustomerBadge();
-        }
-
-        function applyCustomerBadge() {
-            const badge = document.getElementById('custWelcomeBadge');
-            if (badge && customerProfile) {
-                badge.innerText = `👋 Selamat datang, ${customerProfile.gender} ${customerProfile.name}`;
-            }
-        }
-
-        // Tarik Data Produk & Admin dari Firebase secara Real-Time
-        if (db) {
-            // Gabungkan produk dari office & garden
-            db.collection("office_products").onSnapshot(snap => {
-                let officeItems = [];
-                snap.forEach(d => officeItems.push({ id: d.id, ...d.data() }));
-                updateCombinedProducts(officeItems);
-            });
-
-            db.collection("settings").doc("admin_whatsapp").onSnapshot(doc => {
-                if (doc.exists && doc.data().list) {
-                    fetchedAdmins = doc.data().list;
-                    renderAdminWhatsappOptions();
-                }
-            });
-        }
-
-        function updateCombinedProducts(officeList) {
-            fetchedProducts = officeList;
-            const grid = document.getElementById('customerProductGrid');
-            const select = document.getElementById('poProductSelect');
-            if (!grid || !select) return;
-
-            grid.innerHTML = "";
-            select.innerHTML = `<option value="">-- Sila Pilih Produk --</option>`;
-
-            if (fetchedProducts.length === 0) {
-                grid.innerHTML = `<div class="text-xs text-slate-400 text-center py-6 col-span-2">Tiada produk tersedia buat masa ini.</div>`;
-                return;
-            }
-
-            fetchedProducts.forEach(p => {
-                let imgTag = p.photo ? `<img src="${p.photo}" class="w-20 h-20 object-cover rounded-xl border">` : `<div class="w-20 h-20 bg-emerald-100 rounded-xl flex items-center justify-center text-2xl">🌿</div>`;
-                let stockStatus = p.stock > 0 ? `<span class="text-emerald-700 font-bold">Stok Tersedia (${p.stock})</span>` : `<span class="text-rose-600 font-bold">Stok Habis</span>`;
-
-                grid.innerHTML += `
-                    <div class="bg-white border rounded-2xl p-4 shadow-sm flex items-center gap-4">
-                        ${imgTag}
-                        <div class="flex-1 space-y-1">
-                            <h4 class="font-bold text-slate-900 text-sm">${p.name}</h4>
-                            <div class="text-xs text-slate-600 font-mono">RM ${parseFloat(p.price).toFixed(2)} seunit</div>
-                            <div class="text-[11px]">${stockStatus}</div>
-                        </div>
-                    </div>
-                `;
-
-                if (p.stock > 0) {
-                    select.innerHTML += `<option value="${p.name}" data-price="${p.price}" data-stock="${p.stock}">${p.name} - RM${parseFloat(p.price).toFixed(2)}</option>`;
-                }
-            });
-        }
-
-        function calculateCartTotal() {
-            const select = document.getElementById('poProductSelect');
-            const qtyInput = parseInt(document.getElementById('poQty').value) || 1;
-            const shipSelect = document.getElementById('poShippingMethod');
-
-            const selectedOpt = select.options[select.selectedIndex];
-            if (!selectedOpt || !selectedOpt.value) {
-                document.getElementById('summarySubtotal').innerText = "RM 0.00";
-                document.getElementById('summaryDiscount').innerText = "RM 0.00";
-                document.getElementById('summaryGrandTotal').innerText = "RM 0.00";
-                return;
-            }
-
-            let unitPrice = parseFloat(selectedOpt.getAttribute('data-price')) || 0;
-            let subtotal = unitPrice * qtyInput;
-
-            // Diskon Borong 10% jika kuantiti >= 50
-            let discount = 0;
-            if (qtyInput >= 50) {
-                discount = subtotal * 0.10;
-            }
-
-            let shippingCost = parseFloat(shipSelect.options[shipSelect.selectedIndex].getAttribute('data-cost')) || 8;
-            let grandTotal = (subtotal - discount) + shippingCost;
-
-            document.getElementById('summarySubtotal').innerText = `RM ${subtotal.toFixed(2)}`;
-            document.getElementById('summaryDiscount').innerText = `-RM ${discount.toFixed(2)}`;
-            document.getElementById('summaryShipping').innerText = `RM ${shippingCost.toFixed(2)}`;
-            document.getElementById('summaryGrandTotal').innerText = `RM ${grandTotal.toFixed(2)}`;
-        }
-
-        function renderAdminWhatsappOptions() {
-            const container = document.getElementById('adminWhatsappOptionsContainer');
-            if (!container) return;
-            container.innerHTML = "";
-
-            if (fetchedAdmins.length === 0) {
-                container.innerHTML = `<span class="text-xs text-slate-400 col-span-3">Tiada admin WhatsApp dikonfigurasi. Sila hubungi admin utama.</span>`;
-                return;
-            }
-
-            fetchedAdmins.forEach(adm => {
-                container.innerHTML += `
-                    <button type="button" onclick="sendPurchaseOrder('${adm.phone}', '${adm.name}')" class="bg-emerald-600 hover:bg-emerald-700 text-white p-3 rounded-xl text-xs font-bold shadow flex flex-col items-center justify-center gap-1 transition">
-                        <span>💬 Pesan ke Admin</span>
-                        <span class="text-emerald-200">${adm.name}</span>
-                    </button>
-                `;
-            });
-        }
-
-        function sendPurchaseOrder(adminPhone, adminName) {
-            if (!customerProfile) { alert("Sila lengkapkan profil anda terlebih dahulu."); checkCustomerProfile(); return; }
-
-            const select = document.getElementById('poProductSelect');
-            const prodName = select.value;
-            const qty = parseInt(document.getElementById('poQty').value) || 1;
-            const shipMethod = document.getElementById('poShippingMethod').value;
-            const payMethod = document.getElementById('poPaymentMethod').value;
-
-            if (!prodName) { alert("Sila pilih produk yang ingin dipesan."); return; }
-
-            const selectedOpt = select.options[select.selectedIndex];
-            let unitPrice = parseFloat(selectedOpt.getAttribute('data-price')) || 0;
-            let subtotal = unitPrice * qty;
-            let discount = qty >= 50 ? subtotal * 0.10 : 0;
-            let shipCost = shipMethod.includes('7') ? 7 : (shipMethod.includes('5') ? 5 : 8);
-            let grandTotal = (subtotal - discount) + shipCost;
-
-            let invNo = `PO-${Date.now().toString().slice(-6)}`;
-
-            let message = `*PURCHASE ORDER (PO) RASMI*\n` +
-                          `No PO: ${invNo}\n\n` +
-                          `*Maklumat Pelanggan:*\n` +
-                          `• Nama: ${customerProfile.gender} ${customerProfile.name}\n` +
-                          `• Telefon: ${customerProfile.phone}\n` +
-                          `• Alamat: ${customerProfile.address}\n\n` +
-                          `*Butiran Pesanan:*\n` +
-                          `• Produk: ${prodName}\n` +
-                          `• Kuantiti: ${qty} unit\n` +
-                          `• Harga Seunit: RM ${unitPrice.toFixed(2)}\n` +
-                          `• Subtotal: RM ${subtotal.toFixed(2)}\n` +
-                          (discount > 0 ? `• Diskon Borong (10%): -RM ${discount.toFixed(2)}\n` : ``) +
-                          `• Penghantaran: ${shipMethod}\n` +
-                          `• Pembayaran: ${payMethod}\n\n` +
-                          `*JUMLAH KESELURUHAN: RM ${grandTotal.toFixed(2)}*\n\n` +
-                          `Mohon proses pesanan ini. Terima kasih!`;
-
-            let encodedUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`;
-            window.open(encodedUrl, '_blank');
-        }
-
-        function handleCustomerAiQuery(e) {
-            e.preventDefault();
-            const input = document.getElementById('custAiInput').value.toLowerCase();
-            const respBox = document.getElementById('aiCustomerResponseBox');
-            if (!input) return;
-
-            let responseText = "Terima kasih atas pertanyaan anda. Untuk kesihatan optimum, kami amat mengesyorkan produk **Teh Daun Belimbing Buluh** atau ekstrak herba premium kami yang kaya dengan antioksidan dan khasiat semula jadi estet Machap. Sila buat pilihan di katalog di bawah!";
-            if (input.includes('letih') || input.includes('tenaga') || input.includes('lesu')) {
-                responseText = "Untuk masalah keletihan dan tenaga, **Teh Daun Belimbing Buluh** sangat berkesan menyegarkan badan serta melancarkan peredaran darah.";
-            } else if (input.includes('darah tinggi') || input.includes('kencing manis') || input.includes('gula')) {
-                responseText = "Berdasarkan kajian herba kami, penawar herba Belimbing Buluh sangat membantu mengawal tekanan darah dan tahap gula. Anda boleh cuba **Bilimbi Essence** kami.";
-            }
-
-            respBox.innerHTML = `🤖 <b>Konsultan AI:</b> ${responseText}`;
-            document.getElementById('custAiInput').value = "";
-        }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            checkCustomerProfile();
-        });
-    </script>
-</body>
-</html>
