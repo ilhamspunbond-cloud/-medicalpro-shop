@@ -34,8 +34,8 @@
                     <input type="text" id="custName" placeholder="Cth: Puan Aminah" class="w-full border p-2.5 rounded-xl text-sm bg-slate-50 focus:outline-emerald-600">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Nombor WhatsApp (Boleh guna + atau tanpa +)</label>
-                    <input type="text" id="custPhone" placeholder="Cth: +60123456789 atau 6012..." class="w-full border p-2.5 rounded-xl text-sm bg-slate-50 focus:outline-emerald-600">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nombor WhatsApp</label>
+                    <input type="text" id="custPhone" placeholder="Cth: +60123456789" class="w-full border p-2.5 rounded-xl text-sm bg-slate-50 focus:outline-emerald-600">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Alamat Penghantaran Penuh</label>
@@ -83,7 +83,7 @@
 
     <main class="max-w-4xl mx-auto px-4 mt-6 space-y-6">
 
-        <!-- ASISTEN LAYANAN PELANGGAN AI (DENGAN SOKONGAN SUARA 2-HALA) -->
+        <!-- ASISTEN LAYANAN PELANGGAN AI -->
         <section class="bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900 border-2 border-indigo-500 rounded-3xl p-5 text-white shadow-xl space-y-4">
             <div class="flex items-center justify-between border-b border-indigo-700/50 pb-3">
                 <div class="flex items-center gap-3">
@@ -109,22 +109,21 @@
 
             <form onsubmit="handleCustomerAiQuery(event)" class="flex gap-2">
                 <div class="relative flex-1 flex items-center">
-                    <input type="text" id="custAiInput" placeholder="Tanya Asisten (Cth: Apa produk untuk letih lesu?)..." class="w-full bg-white/10 border border-indigo-400/30 text-white placeholder-indigo-300/60 p-2.5 pr-10 rounded-xl text-xs sm:text-sm focus:outline-none">
-                    <!-- Butang Mikrofon untuk Suara Pelanggan -->
+                    <input type="text" id="custAiInput" placeholder="Tanya Asisten (Cth: Apa khasiat serbuk belimbing buluh?)..." class="w-full bg-white/10 border border-indigo-400/30 text-white placeholder-indigo-300/60 p-2.5 pr-10 rounded-xl text-xs sm:text-sm focus:outline-none">
                     <button type="button" id="micBtn" onclick="toggleSpeechRecognition()" title="Cakap dengan AI" class="absolute right-2.5 text-indigo-300 hover:text-white transition text-base">
                         <i class="fa-solid fa-microphone"></i>
                     </button>
                 </div>
                 <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow">Tanya</button>
             </form>
-            <div id="micStatusText" class="text-[10px] text-indigo-300 italic hidden">🎙️ Sedar mendengar suara anda... Sila bercakap sekarang.</div>
+            <div id="micStatusText" class="text-[10px] text-indigo-300 italic hidden">🎙️ Sedang mendengar suara anda... Sila bercakap sekarang.</div>
         </section>
 
         <!-- KATALOG PRODUK REAL-TIME -->
         <section class="space-y-4">
             <div class="flex justify-between items-center">
                 <h3 class="text-base font-bold text-emerald-900 uppercase">📦 Katalog Produk Rasmi (Stok Real-Time)</h3>
-                <span class="text-xs text-slate-500">Klik "Tambah ke Keranjang" untuk beli banyak produk</span>
+                <span class="text-xs text-slate-500">Klik "Tambah ke Keranjang" untuk beli produk</span>
             </div>
             <div id="customerProductGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="text-xs text-slate-400 text-center py-6 col-span-2">Memuat senarai produk dari gudang...</div>
@@ -208,7 +207,7 @@
 
     </main>
 
-    <!-- Script Firebase & Logik Pelanggan (Termasuk Suara 2-Hala) -->
+    <!-- Script Firebase & Logik Pintar AI Produk -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyD_LWsMJL2j8IkeDw0O1e6Gp3gvvvixuzk",
@@ -251,13 +250,13 @@
         function toggleSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             if (!SpeechRecognition) {
-                alert("Maaf, pelayar (browser) anda tidak menyokong pengecaman suara. Sila gunakan Google Chrome atau Safari terkini.");
+                alert("Maaf, pelayar (browser) anda tidak menyokong pengecaman suara.");
                 return;
             }
 
             if (!recognition) {
                 recognition = new SpeechRecognition();
-                recognition.lang = 'ms-MY'; // Bahasa Melayu
+                recognition.lang = 'ms-MY';
                 recognition.interimResults = false;
                 recognition.maxAlternatives = 1;
 
@@ -268,27 +267,31 @@
                 };
 
                 recognition.onresult = (event) => {
-                    const speechToText = event.results[0][0].transcript;
+                    let speechToText = event.results[0][0].transcript;
+                    // Bersihkan pengulangan kata yang sering terjadi pada speech recognition (cth: "serbuk untuk apa serbuk untuk apa")
+                    speechToText = cleanRepeatedSpeech(speechToText);
                     document.getElementById('custAiInput').value = speechToText;
-                    // Hantar automatik soalan suara tersebut
                     handleCustomerAiQueryByText(speechToText);
                 };
 
-                recognition.onerror = (event) => {
-                    console.error("Speech recognition error:", event.error);
-                    stopMicUI();
-                };
-
-                recognition.onend = () => {
-                    stopMicUI();
-                };
+                recognition.onerror = () => { stopMicUI(); };
+                recognition.onend = () => { stopMicUI(); };
             }
 
-            if (isRecording) {
-                recognition.stop();
-            } else {
-                recognition.start();
+            if (isRecording) { recognition.stop(); } 
+            else { recognition.start(); }
+        }
+
+        // Membersihkan teks ucapan yang berulang-ulang dari mikrofon
+        function cleanRepeatedSpeech(text) {
+            let words = text.split(" ");
+            let uniqueWords = [];
+            let halfLen = Math.floor(words.length / 2);
+            // Jika separuh ayat pertama sama persis dengan separuh kedua, potong separuh
+            if (halfLen > 2 && words.slice(0, halfLen).join(" ") === words.slice(halfLen, halfLen * 2).join(" ")) {
+                return words.slice(0, halfLen).join(" ");
             }
+            return text;
         }
 
         function stopMicUI() {
@@ -323,7 +326,7 @@
             let name = customerProfile.name || "Pelanggan";
             let timeGreeting = getTimedGreeting();
             
-            let greeting = `${timeGreeting} ${title} ${name}, selamat datang di Kedai Rasmi Medicalpro Shop! Saya adalah Asisten Layanan Pelanggan AI anda. Anda boleh taip atau klik ikon mikrofon untuk bercakap terus dengan saya! Ada yang boleh saya bantu hari ini?`;
+            let greeting = `${timeGreeting} ${title} ${name}, selamat datang ke Kedai Rasmi Medicalpro Shop! Saya Asisten AI anda. Anda boleh tanya apa saja mengenai khasiat produk herba kami di katalog bawah.`;
             
             document.getElementById('aiCustomerResponseBox').innerHTML = `🤖 <b>Asisten Layanan Pelanggan:</b> ${greeting}`;
             speakText(greeting);
@@ -342,9 +345,7 @@
 
             customerProfile = { name: nameInput, phone: phoneInput, address: addressInput, gender: genderInput };
             localStorage.setItem('medicalpro_customer_profile', JSON.stringify(customerProfile));
-            
-            const modal = document.getElementById('customerProfileModal');
-            if(modal) modal.classList.add('hidden');
+            document.getElementById('customerProfileModal').classList.add('hidden');
             
             applyCustomerBadge();
             initCustomerGreeting();
@@ -414,7 +415,7 @@
             let existing = cartItems.find(item => item.name === prodName);
             if (existing) {
                 if (existing.qty < maxStock) existing.qty += 1;
-                else { alert("Kuantiti telah mencapai had maksimum stok semasa!"); return; }
+                else { alert("Kuantiti telah mencapai had maksimum stok!"); return; }
             } else {
                 cartItems.push({ name: prodName, price: unitPrice, qty: 1, maxStock: maxStock });
             }
@@ -428,7 +429,7 @@
             if (cartItems[index].qty <= 0) cartItems.splice(index, 1);
             else if (cartItems[index].qty > cartItems[index].maxStock) {
                 cartItems[index].qty = cartItems[index].maxStock;
-                alert("Melebihi had stok yang ada!");
+                alert("Melebihi had stok!");
             }
             localStorage.setItem('medicalpro_cart_items', JSON.stringify(cartItems));
             renderCart();
@@ -548,6 +549,7 @@
             window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
         }
 
+        // --- SISTEM AI PINTAR MEMBACA PRODUK & KHASIAT DARI DATABASE ---
         function handleCustomerAiQuery(e) {
             e.preventDefault();
             const inputVal = document.getElementById('custAiInput').value;
@@ -556,20 +558,42 @@
 
         function handleCustomerAiQueryByText(text) {
             const respBox = document.getElementById('aiCustomerResponseBox');
-            const lowerInput = text.toLowerCase();
+            const lowerInput = text.toLowerCase().trim();
             if (!lowerInput) return;
 
-            let responseText = `Terima kasih ${customerProfile.gender} ${customerProfile.name}. Untuk kesihatan optimum, saya syorkan produk Teh Daun Belimbing Buluh atau Bilimbi Essence kami yang kaya dengan antioksidan semula jadi.`;
-            
-            if (lowerInput.includes('letih') || lowerInput.includes('tenaga') || lowerInput.includes('lesu')) {
-                responseText = `Baik ${customerProfile.gender} ${customerProfile.name}, untuk masalah keletihan, Teh Daun Belimbing Buluh sangat berkesan menyegarkan badan dan melancarkan peredaran darah.`;
-            } else if (lowerInput.includes('darah tinggi') || lowerInput.includes('kencing manis') || lowerInput.includes('gula')) {
-                responseText = `Berdasarkan rujukan herba kami, penawar herba Belimbing Buluh membantu mengawal tekanan darah dan tahap gula. Anda boleh cuba Bilimbi Essence.`;
-            } else if (lowerInput.includes('harga') || lowerInput.includes('catalog') || lowerInput.includes('produk')) {
-                responseText = `Semua senarai harga dan stok produk terkini boleh dilihat terus di bahagian katalog produk di bawah ya, ${customerProfile.gender}.`;
+            let responseText = "";
+            let matchedProduct = null;
+
+            // 1. Semak sama ada pertanyaan menyebut produk yang ada dalam fetchedProducts (berdasarkan nama atau khasiat)
+            for (let p of fetchedProducts) {
+                let pName = p.name ? p.name.toLowerCase() : "";
+                let pDesc = p.desc ? p.desc.toLowerCase() : ""; // jika ada field deskripsi/khasiat
+                
+                if (lowerInput.split(" ").some(keyword => keyword.length > 2 && (pName.includes(keyword) || pDesc.includes(keyword)))) {
+                    matchedProduct = p;
+                    break;
+                }
             }
 
-            respBox.innerHTML = `🤖 <b>Asisten Layanan Pelanggan (Anda cakap: "${text}"):</b><br>${responseText}`;
+            // Jika pelanggan bertanya khusus mengenai produk/khasiat yang ditemui di database
+            if (matchedProduct) {
+                let stockInfo = matchedProduct.stock > 0 ? `Stok tersedia ada ${matchedProduct.stock} unit.` : `Maaf, stok sedang habis.`;
+                responseText = `Ya ${customerProfile.gender} ${customerProfile.name}, mengenai <b>${matchedProduct.name}</b>: Harganya adalah RM ${parseFloat(matchedProduct.price).toFixed(2)}. ${stockInfo} ${matchedProduct.desc ? 'Khasiat/Keterangan: ' + matchedProduct.desc : 'Produk herba berkualiti tinggi keluaran Medicalpro.'}`;
+            } 
+            // Jawapan alternatif berasaskan kata kunci kesihatan umum
+            else if (lowerInput.includes('letih') || lowerInput.includes('tenaga') || lowerInput.includes('lesu')) {
+                responseText = `Untuk mengatasi keletihan, ${customerProfile.gender} ${customerProfile.name}, kami sangat mencadangkan produk herba penambah tenaga berasaskan daun belimbing buluh yang boleh disemak di katalog kami di bawah.`;
+            } else if (lowerInput.includes('darah tinggi') || lowerInput.includes('kencing manis') || lowerInput.includes('gula')) {
+                responseText = `Berdasarkan rujukan kesihatan herba kami, produk berkaitan penawar semulajadi belimbing buluh sangat membantu mengawal tekanan darah dan tahap gula. Sila lihat pilihan produk di katalog.`;
+            } else if (lowerInput.includes('harga') || lowerInput.includes('senarai') || lowerInput.includes('produk')) {
+                responseText = `Semua senarai produk terkini berserta harga real-time boleh ${customerProfile.gender} lihat terus di bahagian katalog produk di bawah ya!`;
+            } else {
+                // Jawapan generik pintar yang merujuk kepada senarai produk aktif
+                let prodNames = fetchedProducts.map(p => p.name).join(', ');
+                responseText = `Terima kasih ${customerProfile.gender} ${customerProfile.name}. Mengenai pertanyaan "${text}", produk rasmi yang tersedia di kedai kami merangkumi: ${prodNames ? prodNames : 'pelbagai produk herba kesihatan'}. Sila pilih di katalog bawah atau nyatakan nama produk tertentu untuk info lanjut!`;
+            }
+
+            respBox.innerHTML = `🤖 <b>Asisten Layanan Pelanggan (Anda tanya: "${text}"):</b><br>${responseText}`;
             speakText(responseText);
             document.getElementById('custAiInput').value = "";
         }
