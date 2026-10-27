@@ -38,56 +38,16 @@
 
     <main class="max-w-5xl mx-auto px-4 mt-6 space-y-6">
 
-        <!-- WIDGET ASISTEN AI KESEHATAN & ANALISIS FOTO LIVE UNTUK CUSTOMER -->
-        <section class="bg-gradient-to-br from-emerald-900 via-teal-900 to-slate-900 border-2 border-emerald-500 rounded-3xl p-5 text-white shadow-xl space-y-4">
-            <div class="flex items-center justify-between border-b border-emerald-700/50 pb-3">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-xl overflow-hidden border-2 border-emerald-300 shadow">
-                        🩺
-                    </div>
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <h3 class="font-black text-base text-yellow-300">Asisten AI Pakar Kesihatan & Deteksi Penyakit</h3>
-                            <span class="bg-emerald-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">✨ Live Photo Scan Active</span>
-                        </div>
-                        <p class="text-xs text-emerald-200">Hantar foto keluhan atau tanya masalah kesihatan anda di sini</p>
-                    </div>
-                </div>
-                <button onclick="speakLastAiMessage()" class="bg-emerald-800 hover:bg-emerald-700 text-white p-2 rounded-xl text-xs font-bold shadow">
-                    🔊 Ulang Suara
-                </button>
-            </div>
-
-            <div id="aiChatResponseBox" class="bg-black/35 backdrop-blur-md rounded-2xl p-4 text-sm leading-relaxed border border-emerald-500/30 min-h-[70px] text-emerald-100">
-                Selamat datang ke Medical Pro Shop! Sila tanya soalan kesihatan atau muat naik foto keadaan fizikal/gejala untuk analisis AI serta cadangan produk herba yang tepat.
-            </div>
-
-            <!-- Pratinjau Foto Kesihatan yang Diunggah Customer -->
-            <div id="aiPhotoPreviewBox" class="hidden flex items-center gap-3 bg-white/10 p-2.5 rounded-xl border border-emerald-400/30">
-                <img id="aiUploadedPhotoPreview" src="" class="w-14 h-14 object-cover rounded-lg border border-white/20">
-                <div class="flex-1 text-xs">
-                    <span class="font-bold text-yellow-300 block">📸 Foto Kesihatan / Gejala Dimuat Naik</span>
-                    <span class="text-emerald-200 text-[11px]">AI sedia menganalisis foto ini untuk deteksi penyakit & cadangan produk!</span>
-                </div>
-                <button type="button" onclick="clearAiPhoto()" class="text-rose-300 hover:text-rose-100 text-xs font-bold px-2 py-1 bg-rose-950/60 rounded-lg">Buang</button>
-            </div>
-
-            <form onsubmit="handleCustomerAiQuery(event)" class="flex flex-col sm:flex-row gap-2 pt-1">
-                <div class="flex-1 flex gap-2">
-                    <input type="text" id="aiManualInput" placeholder="Cth: Bagaimana cara merawat tekanan darah tinggi dengan teh belimbing?" class="flex-1 bg-white/10 border border-emerald-400/30 text-white placeholder-emerald-300/60 p-2.5 rounded-xl text-sm focus:outline-none">
-                    <label class="bg-emerald-700 hover:bg-emerald-600 text-white px-3 py-2.5 rounded-xl text-xs font-semibold flex items-center gap-1 cursor-pointer whitespace-nowrap shadow border border-emerald-500/50">
-                        📷 Foto Keluhan
-                        <input type="file" id="aiPhotoInput" accept="image/*" class="hidden" onchange="handleAiPhotoSelected(event)">
-                    </label>
-                </div>
-                <button type="submit" class="bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-5 py-2.5 rounded-xl text-sm font-bold shadow transition">Tanya AI</button>
-            </form>
+        <!-- Banner Selamat Datang -->
+        <section class="bg-gradient-to-r from-emerald-800 to-teal-700 rounded-3xl p-6 text-white shadow-lg space-y-2">
+            <h2 class="text-xl sm:text-2xl font-black text-yellow-300">Selamat Datang ke Medical Pro Shop! 🌿</h2>
+            <p class="text-xs sm:text-sm text-emerald-100 leading-relaxed">Dapatkan produk herba berkualiti tinggi dan semula jadi yang dihasilkan terus dari estet kami di Machap, Johor.</p>
         </section>
 
         <!-- Etalase Produk Medical Pro untuk Customer -->
         <section class="space-y-4">
             <div class="flex justify-between items-center border-b pb-2">
-                <h3 class="font-bold text-lg text-emerald-900">🌿 Etalase Produk Kesihatan Semula Jadi</h3>
+                <h3 class="font-bold text-lg text-emerald-900">📦 Etalase Produk Kesihatan</h3>
                 <span class="text-xs text-slate-500" id="productCountLabel">Memuat produk...</span>
             </div>
             
@@ -165,90 +125,6 @@
         let shopProducts = [];
         let cart = [];
         let adminWhatsappList = [];
-        let aiUploadedPhotoBase64 = "";
-        let lastSpokenText = "";
-
-        function speakText(text) {
-            lastSpokenText = text;
-            if ('speechSynthesis' in window) {
-                window.speechSynthesis.cancel();
-                const utterance = new SpeechSynthesisUtterance(text.replace(/[*_#]/g, ''));
-                utterance.lang = 'ms-MY';
-                utterance.rate = 1.0;
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        function compressImageHD(file, callback) {
-            if (!file) { callback(""); return; }
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    let w = img.width, h = img.height;
-                    if (w > 1200) { h *= 1200 / w; w = 1200; }
-                    canvas.width = w; canvas.height = h;
-                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-                    callback(canvas.toDataURL('image/jpeg', 0.85));
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(file);
-        }
-
-        function handleAiPhotoSelected(e) {
-            const file = e.target.files[0];
-            if (file) {
-                compressImageHD(file, function(base64) {
-                    aiUploadedPhotoBase64 = base64;
-                    document.getElementById('aiUploadedPhotoPreview').src = base64;
-                    document.getElementById('aiPhotoPreviewBox').classList.remove('hidden');
-                });
-            }
-        }
-
-        function clearAiPhoto() {
-            aiUploadedPhotoBase64 = "";
-            document.getElementById('aiPhotoInput').value = "";
-            document.getElementById('aiPhotoPreviewBox').classList.add('hidden');
-        }
-
-        // --- SISTEM AI DETEKSI PENYAKIT & ANALISIS FOTO DI SHOP ---
-        function handleCustomerAiQuery(e) {
-            e.preventDefault();
-            const inputField = document.getElementById('aiManualInput');
-            const query = inputField.value.trim().toLowerCase();
-            const hasPhoto = aiUploadedPhotoBase64 !== "";
-
-            if (!query && !hasPhoto) return;
-
-            let responseText = "";
-            let matchedProduct = shopProducts.find(p => {
-                let pName = (p.name || "").toLowerCase();
-                let pBenefits = (p.benefits || "").toLowerCase();
-                let terms = query.split(' ');
-                return terms.some(term => term.length > 2 && (pName.includes(term) || pBenefits.includes(term)));
-            });
-
-            if (hasPhoto) {
-                // AI Menganalisis Foto Kesihatan / Gejala Penyakit
-                let availableHerbs = shopProducts.length > 0 ? shopProducts.map(p => `• **${p.name}** (RM ${parseFloat(p.price).toFixed(2)}) - Khasiat: ${p.benefits || 'Membantu kesihatan tubuh.'}`).join('\n') : "• Teh Daun Belimbing Wuluh (RM 15.00) - Antioksidan & kawal tekanan darah.";
-
-                responseText = `🩺 **Hasil Analisis Kesihatan & Deteksi AI (Live Scan)**:\nBerdasarkan imej gejala/fizikal yang anda muat naik, AI mengesan tanda keletihan sel, ketidakseimbangan metabolisme, atau keradangan ringan.\n\n🌿 **Syor Produk Herba Semula Jadi**: \nUntuk merawat dan memulihkan kondisi ini secara herba, produk berikut sangat disyorkan:\n${availableHerbs}\n\n💡 *Saranan Pakar*: Amalkan produk herba ini secara konsisten dan dapatkan rehat yang secukupnya. Sila klik butang di bawah produk untuk menambahkannya ke troli!`;
-            } else if (matchedProduct) {
-                responseText = `🌿 **Maklumat Produk ${matchedProduct.name}**:\n• Harga: RM ${parseFloat(matchedProduct.price).toFixed(2)}\n• Stok Tersedia: ${matchedProduct.stock} unit\n• **Khasiat Utama**: ${matchedProduct.benefits || 'Membantu kesihatan tubuh badan secara semula jadi.'}\n\nProduk ini sesuai untuk merawat keluhan yang anda tanyakan. Anda boleh terus menambahkannya ke troli belanja!`;
-            } else {
-                let productListStr = shopProducts.length > 0 ? shopProducts.map(p => `• ${p.name} (RM ${parseFloat(p.price).toFixed(2)})`).join('\n') : "• Teh Daun Belimbing Wuluh";
-                responseText = `💡 **Analisis Soalan "${query}"**:\nUntuk membantu merawat masalah kesihatan tersebut, produk herba berkualiti tinggi *Medical Pro* yang disyorkan meliputi:\n${productListStr}\n\nSila muat naik foto gejala fizikal jika anda mahu AI mendiagnosis keadaan anda dengan lebih terperinci!`;
-            }
-
-            document.getElementById('aiChatResponseBox').innerText = responseText;
-            speakText(responseText);
-
-            inputField.value = "";
-            clearAiPhoto();
-        }
 
         // --- FIRESTORE REAL-TIME SYNC UNTUK SHOP ---
         if (db) {
@@ -278,8 +154,7 @@
             }
             if (countLabel) countLabel.innerText = `${shopProducts.length} produk tersedia`;
 
-            shopProducts.forEach((p, idx) => {
-                window[`shopProd_${idx}`] = p;
+            shopProducts.forEach((p) => {
                 let imgTag = p.photo ? `<img src="${p.photo}" class="w-full h-40 object-cover rounded-2xl mb-3 border">` : `<div class="w-full h-40 bg-emerald-50 rounded-2xl mb-3 flex items-center justify-center text-4xl border border-emerald-100">🌿</div>`;
                 grid.innerHTML += `
                     <div class="bg-white border border-slate-200 p-4 rounded-3xl shadow-sm flex flex-col justify-between space-y-3">
