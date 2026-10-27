@@ -229,10 +229,25 @@
             }
         }
 
+        function getTimedGreeting() {
+            const hour = new Date().getHours();
+            if (hour >= 4 && hour < 12) {
+                return "Selamat Pagi";
+            } else if (hour >= 12 && hour < 15) {
+                return "Selamat Tengah Hari";
+            } else if (hour >= 15 && hour < 19) {
+                return "Selamat Petang";
+            } else {
+                return "Selamat Malam";
+            }
+        }
+
         function initCustomerGreeting() {
             let title = customerProfile.gender || "Tuan";
             let name = customerProfile.name || "Pelanggan";
-            let greeting = `${title} ${name}, selamat datang di Kedai Rasmi Medicalpro Shop! Saya adalah Asisten Layanan Pelanggan AI anda. Ada yang boleh saya bantu hari ini? Anda boleh pilih produk kesihatan dan herba terbaik kami di katalog di bawah, atau tanyakan apa sahaja mengenai produk kami!`;
+            let timeGreeting = getTimedGreeting();
+            
+            let greeting = `${timeGreeting} ${title} ${name}, selamat datang di Kedai Rasmi Medicalpro Shop! Saya adalah Asisten Layanan Pelanggan AI anda. Ada yang boleh saya bantu hari ini? Anda boleh pilih produk kesihatan dan herba terbaik kami di katalog di bawah, atau tanyakan apa sahaja mengenai produk kami!`;
             
             document.getElementById('aiCustomerResponseBox').innerHTML = `🤖 <b>Asisten Layanan Pelanggan:</b> ${greeting}`;
             speakText(greeting);
