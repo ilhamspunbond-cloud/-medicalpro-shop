@@ -244,17 +244,19 @@
             "diskon": "Kami menyediakan potongan diskon borong sebanyak sepuluh persen jika pembelian mencapai lima puluh unit ke atas."
         };
 
-        // FUNGSI PEMBERSIH TOTAL: Membuang semua Tag HTML & simbol mutlak
+        // FUNGSI PERBAIKAN INTONASI & JEDA (Mengekalkan titik, koma, dan tanda baca penting)
         function cleanTextForSpeech(text) {
             if (!text) return "";
             return text
                 .replace(/<[^>]*>?/gm, '')           // Buang semua tag HTML
-                .replace(/[^a-zA-Z0-9\s]/g, ' ') // Buang SEMUA tanda baca / simbol (Hanya izinkan huruf & angka)
-                .replace(/\s+/g, ' ')               // Rapikan spasi
+                .replace(/[*_#`~]/g, '')             // Buang simbol markdown (bintang, underscore, dll)
+                .replace(/([.,?!])\s*/g, '$1 ')      // Kekalkan titik, koma, soal, seru dengan jarak spasi yang kemas untuk jeda intonasi
+                .replace(/[^a-zA-Z0-9\s.,?!]/g, ' ') // Buang simbol lain yang tak perlu, tapi izinkan tanda baca asas
+                .replace(/\s+/g, ' ')               // Rapikan spasi berlebihan
                 .trim();
         }
 
-        // Fungsi Text-to-Speech (AI Bersuara)
+        // Fungsi Text-to-Speech (AI Bersuara dengan Jeda Semulajadi)
         function speakText(text) {
             let cleanSpeech = cleanTextForSpeech(text);
             lastSpokenText = cleanSpeech;
@@ -262,7 +264,7 @@
                 window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(cleanSpeech);
                 utterance.lang = 'ms-MY';
-                utterance.rate = 1.0;
+                utterance.rate = 0.95; // Sedikit santai kelajuannya supaya ada intonasi hidup
                 window.speechSynthesis.speak(utterance);
             }
         }
@@ -334,7 +336,7 @@
             let name = customerProfile.name || "Pelanggan";
             let timeGreeting = getTimedGreeting();
             
-            let greeting = `${timeGreeting} ${title} ${name}, selamat datang ke Kedai Rasmi Medicalpro Shop! Saya Asisten AI anda. Ada produk herba yang anda cari atau ingin saya bantu jelaskan khasiatnya?`;
+            let greeting = `${timeGreeting}, ${title} ${name}. Selamat datang ke Kedai Rasmi Medicalpro Shop! Saya Asisten AI anda. Ada produk herba yang anda cari, atau ingin saya bantu jelaskan khasiatnya?`;
             
             chatConversationHistory.push({ sender: 'ai', text: greeting });
             renderChatHistory();
@@ -633,10 +635,10 @@
 
             // 1. Periksa dulu apakah pertanyaan sesuai dengan Kamus Kosakata Tambahan
             if (matchedDictionaryKey) {
-                responseText = `Ya ${customerProfile.gender} ${customerProfile.name}, ${customDictionary[matchedDictionaryKey]}`;
+                responseText = `Ya, ${customerProfile.gender} ${customerProfile.name}. ${customDictionary[matchedDictionaryKey]}`;
             } 
             else {
-                // 2. Jika tidak di kamus, cocokan langsung dengan data produk dari database office_products (inputan admin kebun)
+                // 2. Jika tidak di kamus, cocokan langsung dengan data produk dari database office_products
                 for (let p of fetchedProducts) {
                     let pName = p.name ? p.name.toLowerCase() : "";
                     let pBenefits = (p.benefits || p.desc || p.khasiat || "").toLowerCase();
@@ -652,20 +654,20 @@
                     let cleanDesc = cleanTextForSpeech(rawBenefits);
                     let stockInfo = matchedProduct.stock > 0 ? `Stok tersedia ada ${matchedProduct.stock} unit.` : `Maaf, stok sedang habis.`;
                     
-                    responseText = `Ya ${customerProfile.gender} ${customerProfile.name}, mengenai ${matchedProduct.name}, harganya RM ${parseFloat(matchedProduct.price).toFixed(2)}. ${stockInfo} Khasiat utamanya: ${cleanDesc}. Ada lagi yang ingin anda ketahui?`;
+                    responseText = `Ya, ${customerProfile.gender} ${customerProfile.name}. Mengenai ${matchedProduct.name}, harganya adalah RM ${parseFloat(matchedProduct.price).toFixed(2)}. ${stockInfo} Khasiat utamanya ialah: ${cleanDesc}. Ada lagi yang ingin anda ketahui?`;
                 } 
                 else if (lowerInput.includes('lain') || lowerInput.includes('rekomendasi') || lowerInput.includes('cadang') || lowerInput.includes('apa lagi')) {
                     let otherProducts = fetchedProducts.slice(0, 3).map(p => p.name).join(', ');
-                    responseText = `Selain itu ${customerProfile.gender}, kami juga ada produk pilihan seperti ${otherProducts}. Semuanya bagus untuk kesihatan harian. Berminat untuk cuba?`;
+                    responseText = `Selain itu, ${customerProfile.gender}, kami juga ada produk pilihan seperti ${otherProducts}. Semuanya sangat bagus untuk kesihatan harian. Berminat untuk mencubanya?`;
                 }
                 else if (lowerInput.includes('letih') || lowerInput.includes('tenaga') || lowerInput.includes('lesu')) {
-                    responseText = `Untuk masalah keletihan, ${customerProfile.gender} ${customerProfile.name}, kami ada produk penambah tenaga semulajadi. Mau saya kongsikan senarai produknya?`;
+                    responseText = `Untuk masalah keletihan, ${customerProfile.gender} ${customerProfile.name}, kami ada menyediakan produk penambah tenaga semulajadi. Mahu saya kongsikan senarai produknya?`;
                 } 
                 else if (lowerInput.includes('darah tinggi') || lowerInput.includes('kencing manis') || lowerInput.includes('gula')) {
-                    responseText = `Untuk kawalan kesihatan dalaman, penawar herba dari kebun kami sangat membantu. Anda boleh semak butirannya di katalog bawah.`;
+                    responseText = `Untuk kawalan kesihatan dalaman, penawar herba dari kebun kami sangat membantu. Anda boleh menyemak butirannya di bahagian katalog bawah.`;
                 } 
                 else {
-                    responseText = `Baik ${customerProfile.gender} ${customerProfile.name}. Mengenai "${text}", anda boleh pilih produk terus di katalog bawah atau beritahu saya jika perlukan cadangan produk kesihatan yang lain.`;
+                    responseText = `Baik, ${customerProfile.gender} ${customerProfile.name}. Mengenai "${text}", anda boleh memilih produk terus di katalog bawah, atau beritahu saya jika anda perlukan cadangan produk kesihatan yang lain.`;
                 }
             }
 
@@ -674,7 +676,7 @@
             speakText(responseText);
             document.getElementById('custAiInput').value = "";
 
-            // Simpan kosakata dan percakapan ke Cloud Firestore secara global lintas HP
+            // Simpan kosakata dan percakapan ke Cloud Firestore
             saveConversationToCloud(text, responseText);
         }
 
