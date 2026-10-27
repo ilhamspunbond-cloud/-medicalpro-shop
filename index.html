@@ -16,15 +16,15 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans pb-24">
 
-    <!-- MODAL PENDAFTARAN PELANGGAN -->
-    <div id="customerProfileModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+    <!-- MODAL PENDAFTARAN PELANGGAN (Hanya Keluar Sekali Saja) -->
+    <div id="customerProfileModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm hidden">
         <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl space-y-4 border-2 border-emerald-500">
             <div class="text-center">
                 <div class="w-16 h-16 rounded-full bg-emerald-100 mx-auto flex items-center justify-center overflow-hidden border-2 border-emerald-500 shadow-sm mb-2">
                     <img src="shop-logo.png" alt="Logo" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentNode.innerHTML='🌱';">
                 </div>
                 <h3 class="text-lg font-bold text-emerald-900 mt-1">Selamat Datang ke Kedai Medicalpro</h3>
-                <p class="text-xs text-slate-500">Sila masukkan butiran anda untuk mula memesan.</p>
+                <p class="text-xs text-slate-500">Sila masukkan butiran anda untuk mula memesan (hanya sekali sahaja).</p>
             </div>
             <div class="space-y-3">
                 <div>
@@ -32,8 +32,8 @@
                     <input type="text" id="custName" placeholder="Cth: Puan Aminah" class="w-full border p-2.5 rounded-xl text-sm bg-slate-50 focus:outline-emerald-600">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Nombor WhatsApp (Contoh: 60123456789)</label>
-                    <input type="text" id="custPhone" placeholder="Cth: 60123456789" class="w-full border p-2.5 rounded-xl text-sm bg-slate-50 focus:outline-emerald-600">
+                    <label class="block text-xs font-bold text-slate-700 mb-1">Nombor WhatsApp (Boleh guna + atau tanpa +)</label>
+                    <input type="text" id="custPhone" placeholder="Cth: +60123456789 atau 6012..." class="w-full border p-2.5 rounded-xl text-sm bg-slate-50 focus:outline-emerald-600">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 mb-1">Alamat Penghantaran Penuh</label>
@@ -68,8 +68,11 @@
                 <h1 class="text-xl font-black tracking-wide text-blue-900 uppercase">KEDAI RASMI MEDICALPRO</h1>
                 <p class="text-xs font-bold text-blue-900/80 mt-0.5">Produk Herba & Pertanian Estet Machap</p>
             </div>
-            <div id="custWelcomeBadge" class="bg-yellow-300 text-blue-900 text-xs font-bold px-3 py-1 rounded-full border border-yellow-500/50">
-                Pelanggan: Memuat...
+            <div class="flex items-center gap-2">
+                <div id="custWelcomeBadge" class="bg-yellow-300 text-blue-900 text-xs font-bold px-3 py-1 rounded-full border border-yellow-500/50">
+                    Pelanggan: Memuat...
+                </div>
+                <button type="button" onclick="resetCustomerProfile()" class="text-[10px] bg-blue-900 text-yellow-300 px-2 py-1 rounded-lg font-bold shadow">Tukar Profil ⚙️</button>
             </div>
         </div>
     </header>
@@ -185,40 +188,54 @@
         let fetchedAdmins = [];
 
         function checkCustomerProfile() {
+            const modal = document.getElementById('customerProfileModal');
             if (!customerProfile || !customerProfile.name) {
-                document.getElementById('customerProfileModal').classList.remove('hidden');
+                if(modal) modal.classList.remove('hidden');
             } else {
+                if(modal) modal.classList.add('hidden');
                 applyCustomerBadge();
             }
         }
 
         function saveCustomerProfile() {
-            const name = document.getElementById('custName').value.trim();
-            const phone = document.getElementById('custPhone').value.trim();
-            const address = document.getElementById('custAddress').value.trim();
-            const gender = document.getElementById('custGender').value;
+            const nameInput = document.getElementById('custName').value.trim();
+            const phoneInput = document.getElementById('custPhone').value.trim();
+            const addressInput = document.getElementById('custAddress').value.trim();
+            const genderInput = document.getElementById('custGender').value;
 
-            if (!name || !phone || !address) {
+            if (!nameInput || !phoneInput || !addressInput) {
                 alert("Sila lengkapkan nama, nombor WhatsApp, dan alamat anda!");
                 return;
             }
 
-            customerProfile = { name, phone, address, gender };
+            customerProfile = { 
+                name: nameInput, 
+                phone: phoneInput, // Terima apa jua format nombor (ada + atau tidak)
+                address: addressInput, 
+                gender: genderInput 
+            };
+
             localStorage.setItem('medicalpro_customer_profile', JSON.stringify(customerProfile));
             
             const modal = document.getElementById('customerProfileModal');
             if(modal) {
-                modal.style.display = 'none';
                 modal.classList.add('hidden');
             }
             
             applyCustomerBadge();
+            alert("Profil berjaya disimpan! Selamat memesan.");
+        }
+
+        function resetCustomerProfile() {
+            localStorage.removeItem('medicalpro_customer_profile');
+            customerProfile = null;
+            document.getElementById('customerProfileModal').classList.remove('hidden');
         }
 
         function applyCustomerBadge() {
             const badge = document.getElementById('custWelcomeBadge');
             if (badge && customerProfile) {
-                badge.innerText = `👋 Selamat datang, ${customerProfile.gender} ${customerProfile.name}`;
+                badge.innerText = `👋 ${customerProfile.gender} ${customerProfile.name}`;
             }
         }
 
@@ -359,7 +376,8 @@
                           `*JUMLAH KESELURUHAN: RM ${grandTotal.toFixed(2)}*\n\n` +
                           `Mohon proses pesanan ini. Terima kasih!`;
 
-            let encodedUrl = `https://wa.me/${adminPhone}?text=${encodeURIComponent(message)}`;
+            let cleanPhone = adminPhone.replace(/[^0-9]/g, '');
+            let encodedUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
             window.open(encodedUrl, '_blank');
         }
 
