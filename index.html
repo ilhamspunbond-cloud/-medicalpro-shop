@@ -540,21 +540,41 @@
                 `;
             });
         }
-
         function sendPurchaseOrder(adminPhone, adminName) {
-            if (!customerProfile) { alert("Sila lengkapkan profil anda."); checkCustomerProfile(); return; }
-            if (cartItems.length === 0) { alert("Keranjang kosong!"); return; }
+    if (!customerProfile) { alert("Sila lengkapkan profil anda."); checkCustomerProfile(); return; }
+    if (cartItems.length === 0) { alert("Keranjang kosong!"); return; }
 
-            const shipMethod = document.getElementById('poShippingMethod').value;
-            const payMethod = document.getElementById('poPaymentMethod').value;
+    const shipMethod = document.getElementById('poShippingMethod').value;
+    const payMethod = document.getElementById('poPaymentMethod').value;
 
-            let subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
-            let totalUnits = cartItems.reduce((sum, item) => sum + item.qty, 0);
-            let discount = totalUnits >= 50 ? subtotal * 0.10 : 0;
-            let shipCost = shipMethod.includes('7') ? 7 : (shipMethod.includes('5') ? 5 : 8);
-            let grandTotal = (subtotal - discount) + shipCost;
+    let subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
+    let totalUnits = cartItems.reduce((sum, item) => sum + item.qty, 0);
+    let discount = totalUnits >= 50 ? subtotal * 0.10 : 0;
+    let shipCost = shipMethod.includes('7') ? 7 : (shipMethod.includes('5') ? 5 : 8);
+    let grandTotal = (subtotal - discount) + shipCost;
 
-            let invNo = `PO-${Date.now().toString().slice(-6)}`;
+    let invNo = `PO-${Date.now().toString().slice(-6)}`;
+    let todayStr = new Date().toISOString().substring(0, 10);
+
+    // Format data untuk disimpan ke Firebase agar langsung muncul di Admin
+    let orderData = {
+        invoiceNo: invNo,
+        date: todayStr,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+        customerName: `${customerProfile.gender} ${customerProfile.name}`,
+        customerPhone: customerProfile.phone,
+        customerAddress: customerProfile.address,
+        items: cartItems.map(i => ({ name: i.name, qty: i.qty, price: i.price })),
+        shipping: shipMethod,
+        payment: payMethod,
+        grandTotal: grandTotal,
+        status: "Sedang Diproses 📦",
+        trackingNo: ""
+    };
+
+    // Simpan ke Firestore (Koleksi: customer_orders)
+    if (db) {
+        db.collection("customer_orders").add(orderData).then(() => {
             let productDetailsText = cartItems.map((item, i) => `${i+1}. ${item.name} (${item.qty} unit x RM ${item.price.toFixed(2)})`).join('\n');
 
             let message = `*PURCHASE ORDER (PO) RASMI*\n` +
@@ -572,7 +592,14 @@
 
             let cleanPhone = adminPhone.replace(/[^0-9]/g, '');
             window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
-        }
+        }).catch(err => {
+            alert("Gagal menghantar pesanan ke sistem: " + err.message);
+        });
+    } else {
+        alert("Pangkalan data tidak tersambung.");
+    }
+
+
 
         // --- MENYIMPAN KOSAKATA & PERCAKAPAN KE CLOUD (GLOBAL MEMORY) ---
         function saveConversationToCloud(customerText, aiResponseText) {
