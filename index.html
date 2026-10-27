@@ -80,19 +80,19 @@
 
     <main class="max-w-4xl mx-auto px-4 mt-6 space-y-6">
 
-        <!-- ASISTEN AI KONSULTAN (BERBICARA NAMA IKLIMAH) -->
+        <!-- ASISTEN LAYANAN PELANGGAN AI -->
         <section class="bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900 border-2 border-indigo-500 rounded-3xl p-5 text-white shadow-xl space-y-4">
             <div class="flex items-center justify-between border-b border-indigo-700/50 pb-3">
                 <div class="flex items-center gap-3">
                     <div class="w-12 h-12 rounded-full bg-indigo-600 flex items-center justify-center font-bold text-xl border-2 border-indigo-400 shadow">
-                        👩‍💻
+                        👩‍💼
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h3 class="font-black text-base text-yellow-300">Iklimah (Asisten AI Kedai)</h3>
-                            <span class="bg-emerald-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">Aktif Bersuara</span>
+                            <h3 class="font-black text-base text-yellow-300">Asisten Layanan Pelanggan AI</h3>
+                            <span class="bg-emerald-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">Medicalpro Shop</span>
                         </div>
-                        <p class="text-xs text-indigo-200">Konsultan peribadi herba & produk Medicalpro</p>
+                        <p class="text-xs text-indigo-200">Siap membantu urusan pesanan anda</p>
                     </div>
                 </div>
                 <button onclick="speakLastAiMessage()" class="bg-indigo-700 hover:bg-indigo-600 text-white px-3 py-2 rounded-xl text-xs font-bold shadow flex items-center gap-1">
@@ -101,11 +101,11 @@
             </div>
 
             <div id="aiCustomerResponseBox" class="bg-black/35 backdrop-blur-md rounded-2xl p-4 text-xs sm:text-sm leading-relaxed border border-indigo-500/30 text-indigo-100">
-                Memuatkan sambutan suara Iklimah...
+                Memuatkan sambutan...
             </div>
 
             <form onsubmit="handleCustomerAiQuery(event)" class="flex gap-2">
-                <input type="text" id="custAiInput" placeholder="Tanya Iklimah (Cth: Apa produk untuk letih lesu?)..." class="flex-1 bg-white/10 border border-indigo-400/30 text-white placeholder-indigo-300/60 p-2.5 rounded-xl text-xs sm:text-sm focus:outline-none">
+                <input type="text" id="custAiInput" placeholder="Tanya Asisten (Cth: Apa produk untuk letih lesu?)..." class="flex-1 bg-white/10 border border-indigo-400/30 text-white placeholder-indigo-300/60 p-2.5 rounded-xl text-xs sm:text-sm focus:outline-none">
                 <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow">Tanya</button>
             </form>
         </section>
@@ -182,7 +182,7 @@
 
     </main>
 
-    <!-- Script Firebase & Logik Keranjang + Suara AI Iklimah -->
+    <!-- Script Firebase & Logik Pelanggan -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyD_LWsMJL2j8IkeDw0O1e6Gp3gvvvixuzk",
@@ -225,16 +225,16 @@
             } else {
                 if(modal) modal.classList.add('hidden');
                 applyCustomerBadge();
-                initIklimahGreeting();
+                initCustomerGreeting();
             }
         }
 
-        function initIklimahGreeting() {
+        function initCustomerGreeting() {
             let title = customerProfile.gender || "Tuan";
             let name = customerProfile.name || "Pelanggan";
-            let greeting = `Halo ${title} ${name}! Saya Iklimah, asisten AI Kedai Medicalpro. Sila pilih pelbagai produk herba berkualiti kami di katalog bawah dan masukkan ke dalam keranjang. Ada apa yang boleh saya bantu hari ini?`;
+            let greeting = `${title} ${name}, selamat datang di Kedai Rasmi Medicalpro Shop! Saya adalah Asisten Layanan Pelanggan AI anda. Ada yang boleh saya bantu hari ini? Anda boleh pilih produk kesihatan dan herba terbaik kami di katalog di bawah, atau tanyakan apa sahaja mengenai produk kami!`;
             
-            document.getElementById('aiCustomerResponseBox').innerHTML = `🤖 <b>Iklimah:</b> ${greeting}`;
+            document.getElementById('aiCustomerResponseBox').innerHTML = `🤖 <b>Asisten Layanan Pelanggan:</b> ${greeting}`;
             speakText(greeting);
         }
 
@@ -256,7 +256,7 @@
             if(modal) modal.classList.add('hidden');
             
             applyCustomerBadge();
-            initIklimahGreeting();
+            initCustomerGreeting();
         }
 
         function resetCustomerProfile() {
@@ -320,7 +320,6 @@
             });
         }
 
-        // --- FUNGSI KERANJANG (MULTI-PRODUK) ---
         function addToCart(prodName, unitPrice, maxStock) {
             let existing = cartItems.find(item => item.name === prodName);
             if (existing) {
@@ -403,7 +402,6 @@
                 `;
             });
 
-            // Diskaun Borong 10% jika jumlah keseluruhan unit >= 50
             let discount = totalUnits >= 50 ? subtotal * 0.10 : 0;
             const shipSelect = document.getElementById('poShippingMethod');
             let shippingCost = parseFloat(shipSelect.options[shipSelect.selectedIndex].getAttribute('data-cost')) || 8;
@@ -480,14 +478,14 @@
             const respBox = document.getElementById('aiCustomerResponseBox');
             if (!input) return;
 
-            let responseText = "Terima kasih. Untuk kesihatan optimum, saya syorkan produk Teh Daun Belimbing Buluh atau Bilimbi Essence kami yang kaya dengan antioksidan semula jadi.";
+            let responseText = `Terima kasih ${customerProfile.gender} ${customerProfile.name}. Untuk kesihatan optimum, saya syorkan produk Teh Daun Belimbing Buluh atau Bilimbi Essence kami yang kaya dengan antioksidan semula jadi.`;
             if (input.includes('letih') || input.includes('tenaga') || input.includes('lesu')) {
-                responseText = "Untuk masalah keletihan, Teh Daun Belimbing Buluh sangat berkesan menyegarkan badan dan melancarkan peredaran darah.";
+                responseText = `Baik ${customerProfile.gender} ${customerProfile.name}, untuk masalah keletihan, Teh Daun Belimbing Buluh sangat berkesan menyegarkan badan dan melancarkan peredaran darah.`;
             } else if (input.includes('darah tinggi') || input.includes('kencing manis') || input.includes('gula')) {
-                responseText = "Berdasarkan rujukan herba kami, penawar herba Belimbing Buluh membantu mengawal tekanan darah dan tahap gula. Anda boleh cuba Bilimbi Essence.";
+                responseText = `Berdasarkan rujukan herba kami, penawar herba Belimbing Buluh membantu mengawal tekanan darah dan tahap gula. Anda boleh cuba Bilimbi Essence.`;
             }
 
-            respBox.innerHTML = `🤖 <b>Iklimah:</b> ${responseText}`;
+            respBox.innerHTML = `🤖 <b>Asisten Layanan Pelanggan:</b> ${responseText}`;
             speakText(responseText);
             document.getElementById('custAiInput').value = "";
         }
