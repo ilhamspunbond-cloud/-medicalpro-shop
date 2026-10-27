@@ -110,7 +110,7 @@
 
             <form onsubmit="handleCustomerAiQuery(event)" class="flex gap-2">
                 <div class="relative flex-1 flex items-center">
-                    <input type="text" id="custAiInput" placeholder="Tanya Asisten (Cth: Apa khasiat produk ini?)..." class="w-full bg-white/10 border border-indigo-400/30 text-white placeholder-indigo-300/60 p-2.5 pr-10 rounded-xl text-xs sm:text-sm focus:outline-none">
+                    <input type="text" id="custAiInput" placeholder="Tanya Asisten (Cth: Apa khasiat teh belimbing?)..." class="w-full bg-white/10 border border-indigo-400/30 text-white placeholder-indigo-300/60 p-2.5 pr-10 rounded-xl text-xs sm:text-sm focus:outline-none">
                     <button type="button" id="micBtn" onclick="toggleSpeechRecognition()" title="Cakap dengan AI" class="absolute right-2.5 text-indigo-300 hover:text-white transition text-base">
                         <i class="fa-solid fa-microphone"></i>
                     </button>
@@ -208,7 +208,7 @@
 
     </main>
 
-    <!-- Script Firebase & Logik Pintar AI Terpusat -->
+    <!-- Script Firebase & Logik AI Terpusat -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyD_LWsMJL2j8IkeDw0O1e6Gp3gvvvixuzk",
@@ -235,12 +235,13 @@
         let recognition = null;
         let isRecording = false;
 
-        // Membersihkan simbol/kode dari database agar AI berbicara lancar seperti manusia
+        // FUNGSI PEMBERSIH TOTAL: Membuang semua Tag HTML (<b>, <br>, dll) & simbol agar AI berbicara lancar seperti manusia
         function cleanTextForSpeech(text) {
             if (!text) return "";
             return text
-                .replace(/[-–—_#*~`[\]()/{}]/g, ' ') 
-                .replace(/\s+/g, ' ')               
+                .replace(/<[^>]*>?/gm, '')           // Buang semua tag HTML (<br>, <b>, </div>, dll)
+                .replace(/[-–—_#*~`[\]()/{}]/g, ' ') // Buang tanda hubung, kurungan, bintang, dll.
+                .replace(/\s+/g, ' ')               // Rapikan spasi berlebihan
                 .trim();
         }
 
@@ -379,6 +380,7 @@
         }
 
         if (db) {
+            // Sinkronisasi real-time produk office dari aplikasi Kebun Medical Pro
             db.collection("office_products").onSnapshot(snap => {
                 let officeItems = [];
                 snap.forEach(d => officeItems.push({ id: d.id, ...d.data() }));
@@ -576,7 +578,7 @@
             });
         }
 
-        // --- SISTEM AI PINTAR: MEMORI + DETAIL/RINGKAS + BERSIH KODE ---
+        // --- SISTEM AI PINTAR: MEMORI + DETAIL PRODUK KEBUN + BERSIH TOTAL DARI KODE/HTML ---
         function handleCustomerAiQuery(e) {
             e.preventDefault();
             const inputVal = document.getElementById('custAiInput').value;
@@ -592,19 +594,22 @@
             let responseText = "";
             let matchedProduct = null;
 
+            // Pencocokan langsung dengan data produk yang ditarik dari aplikasi Kebun Medical Pro
             for (let p of fetchedProducts) {
                 let pName = p.name ? p.name.toLowerCase() : "";
-                if (lowerInput.split(" ").some(keyword => keyword.length > 2 && pName.includes(keyword))) {
+                let pBenefits = p.benefits ? p.benefits.toLowerCase() : "";
+                if (lowerInput.split(" ").some(keyword => keyword.length > 2 && (pName.includes(keyword) || pBenefits.includes(keyword)))) {
                     matchedProduct = p;
                     break;
                 }
             }
 
             if (matchedProduct) {
-                let cleanDesc = cleanTextForSpeech(matchedProduct.desc || "Produk herba berkualiti tinggi keluaran Medicalpro.");
+                // Bersihkan teks khasiat dari tag HTML (<b>, <br>) secara total sebelum dibaca AI
+                let cleanDesc = cleanTextForSpeech(matchedProduct.benefits || "Produk herba berkualiti tinggi keluaran Medicalpro.");
                 let stockInfo = matchedProduct.stock > 0 ? `Stok tersedia ada ${matchedProduct.stock} unit.` : `Maaf, stok sedang habis.`;
                 
-                responseText = `Ya ${customerProfile.gender} ${customerProfile.name}, mengenai <b>${matchedProduct.name}</b>, harganya RM ${parseFloat(matchedProduct.price).toFixed(2)}. ${stockInfo} Khasiat utamanya: ${cleanDesc}. Ada lagi yang ingin anda ketahui?`;
+                responseText = `Ya ${customerProfile.gender} ${customerProfile.name}, mengenai ${matchedProduct.name}, harganya RM ${parseFloat(matchedProduct.price).toFixed(2)}. ${stockInfo} Khasiat utamanya: ${cleanDesc}. Ada lagi yang ingin anda ketahui?`;
             } 
             else if (lowerInput.includes('lain') || lowerInput.includes('rekomendasi') || lowerInput.includes('cadang') || lowerInput.includes('apa lagi')) {
                 let otherProducts = fetchedProducts.slice(0, 3).map(p => p.name).join(', ');
@@ -614,7 +619,7 @@
                 responseText = `Untuk masalah keletihan, ${customerProfile.gender} ${customerProfile.name}, kami ada produk penambah tenaga semulajadi. Mau saya kongsikan senarai produknya?`;
             } 
             else if (lowerInput.includes('darah tinggi') || lowerInput.includes('kencing manis') || lowerInput.includes('gula')) {
-                responseText = `Untuk kawalan kesihatan dalaman, penawar herba belimbing wuluh sangat membantu. Anda boleh semak butirannya di katalog bawah.`;
+                responseText = `Untuk kawalan kesihatan dalaman, penawar herba dari kebun kami sangat membantu. Anda boleh semak butirannya di katalog bawah.`;
             } 
             else {
                 responseText = `Baik ${customerProfile.gender} ${customerProfile.name}. Mengenai "${text}", anda boleh pilih produk terus di katalog bawah atau beritahu saya jika perlukan cadangan produk kesihatan yang lain.`;
