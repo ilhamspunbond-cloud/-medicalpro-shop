@@ -25,24 +25,24 @@
                 <div class="w-16 h-16 rounded-full bg-emerald-100 mx-auto flex items-center justify-center overflow-hidden border-2 border-emerald-500 shadow-sm mb-2">
                     <img src="shop-logo.png" alt="Logo" class="w-full h-full object-cover" onerror="this.onerror=null;this.parentNode.innerHTML='🌱';">
                 </div>
-                <h3 class="text-lg font-bold text-emerald-900 mt-1">Selamat Datang ke Kedai Medicalpro</h3>
-                <p class="text-xs text-slate-500">Sila masukkan butiran anda untuk mula memesan (hanya sekali sahaja).</p>
+                <h3 class="text-lg font-bold text-emerald-900 mt-1" id="mWelcomeTitleTxt">Selamat Datang ke Kedai Medicalpro</h3>
+                <p class="text-xs text-slate-500" id="mWelcomeSubTxt">Sila masukkan butiran anda untuk mula memesan (hanya sekali sahaja).</p>
             </div>
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Nama Penuh Anda</label>
+                    <label class="block text-xs font-bold text-slate-700 mb-1" id="lblRealNameTxt">Nama Penuh Anda</label>
                     <input type="text" id="custName" placeholder="Cth: Puan Aminah" class="w-full border p-2.5 rounded-xl text-sm bg-slate-50 focus:outline-emerald-600">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Nombor WhatsApp</label>
+                    <label class="block text-xs font-bold text-slate-700 mb-1" id="lblPhoneTxt">Nombor WhatsApp</label>
                     <input type="text" id="custPhone" placeholder="Cth: +60123456789" class="w-full border p-2.5 rounded-xl text-sm bg-slate-50 focus:outline-emerald-600">
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Alamat Penghantaran Penuh</label>
+                    <label class="block text-xs font-bold text-slate-700 mb-1" id="lblAddressTxt">Alamat Penghantaran Penuh</label>
                     <textarea id="custAddress" rows="2" placeholder="Cth: No 12, Jalan Melati, Johor Bahru" class="w-full border p-2.5 rounded-xl text-sm bg-slate-50 focus:outline-emerald-600"></textarea>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Pilihan Gelaran</label>
+                    <label class="block text-xs font-bold text-slate-700 mb-1" id="lblGenderTxt">Pilihan Gelaran</label>
                     <select id="custGender" class="w-full border p-2.5 rounded-xl text-sm bg-slate-50 focus:outline-emerald-600">
                         <option value="Tuan">Tuan</option>
                         <option value="Puan">Puan</option>
@@ -53,9 +53,80 @@
                         <option value="Makhi">Makhi</option>
                     </select>
                 </div>
-                <button type="button" onclick="saveCustomerProfile()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition">
+                <button type="button" onclick="saveCustomerProfile()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-xl text-sm shadow-md transition" id="mBtnSaveTxt">
                     Masuk ke Katalog 🚀
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL LOG MASUK ADMIN -->
+    <div id="adminLoginModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm hidden">
+        <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl space-y-4 border-2 border-amber-500">
+            <h3 class="font-bold text-slate-800 text-sm">🔐 Log Masuk Panel Pentadbir</h3>
+            <p class="text-xs text-slate-500">Sila masukkan kata laluan utama pentadbir sistem.</p>
+            <input type="password" id="adminPasswordInput" placeholder="Kata Laluan (Cth: rojak123)" class="w-full border p-2.5 rounded-xl text-xs bg-white">
+            <div class="flex gap-2">
+                <button type="button" onclick="closeAdminLogin()" class="flex-1 bg-slate-200 text-slate-700 py-2 rounded-xl text-xs font-bold">Batal</button>
+                <button type="button" onclick="verifyAdmin()" class="flex-1 bg-amber-600 text-white py-2 rounded-xl text-xs font-bold">Masuk</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PANEL TETAPAN ADMIN UTAMA -->
+    <div id="adminDashboardModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm hidden overflow-y-auto">
+        <div class="bg-white p-6 rounded-3xl max-w-2xl w-full shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="font-bold text-slate-900 text-base">⚙️ Panel Tetapan Pentadbir (Medicalpro)</h3>
+                <button type="button" onclick="closeAdminDashboard()" class="text-slate-400 hover:text-slate-600 font-bold text-base">✕</button>
+            </div>
+
+            <!-- Tukar Kata Laluan Admin -->
+            <div class="bg-slate-50 border p-4 rounded-2xl space-y-3">
+                <h4 class="font-bold text-slate-800 text-xs">🔑 Tukar Kata Laluan Admin</h4>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <input type="password" id="newAdminPassword" placeholder="Kata Laluan Baharu" class="border p-2 rounded-xl text-xs bg-white">
+                    <button type="button" onclick="saveAdminPasswordSetting()" class="bg-blue-600 text-white py-2 rounded-xl text-xs font-bold shadow">Simpan Kata Laluan</button>
+                </div>
+            </div>
+
+            <!-- Pengurusan Kata Sambutan Mengikut Waktu -->
+            <div class="bg-slate-50 border p-4 rounded-2xl space-y-3">
+                <h4 class="font-bold text-slate-800 text-xs">⏰ Tetapan Kata Sambutan AI Mengikut Waktu</h4>
+                <p class="text-[11px] text-slate-500">Ubah kata sambutan agar pelanggan tidak mendengar ayat yang sama setiap masa (boleh selit pantun atau gaya bahasa cair).</p>
+                <div class="space-y-2">
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700">Pagi (04:00 - 11:59)</label>
+                        <input type="text" id="greetingMorning" class="w-full border p-2 rounded-lg text-xs bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700">Tengah Hari (12:00 - 14:59)</label>
+                        <input type="text" id="greetingAfternoon" class="w-full border p-2 rounded-lg text-xs bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700">Petang (15:00 - 18:59)</label>
+                        <input type="text" id="greetingEvening" class="w-full border p-2 rounded-lg text-xs bg-white">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] font-bold text-slate-700">Malam (19:00 - 03:59)</label>
+                        <input type="text" id="greetingNight" class="w-full border p-2 rounded-lg text-xs bg-white">
+                    </div>
+                    <button type="button" onclick="saveTimedGreetings()" class="bg-emerald-600 text-white py-2 px-4 rounded-xl text-xs font-bold shadow">Simpan Kata Sambutan Waktu</button>
+                </div>
+            </div>
+
+            <!-- Tambah Ingatan / Kamus Kosakata AI Baru -->
+            <div class="bg-slate-50 border p-4 rounded-2xl space-y-3">
+                <h4 class="font-bold text-slate-800 text-xs">🧠 Tambah Ingatan & Kamus Kosakata Baharu AI</h4>
+                <div class="space-y-2">
+                    <input type="text" id="aiTrainKeyword" placeholder="Kata Kunci (Cth: cara guna / kesan sampingan)" class="w-full border p-2 rounded-xl text-xs bg-white">
+                    <textarea id="aiTrainAnswer" rows="2" placeholder="Jawapan / Penjelasan AI untuk kata kunci tersebut..." class="w-full border p-2 rounded-xl text-xs bg-white"></textarea>
+                    <button type="button" onclick="saveAiTrainingRule()" class="bg-indigo-600 text-white py-2 px-4 rounded-xl text-xs font-bold shadow">Tambah Kamus AI</button>
+                </div>
+                <div class="mt-2">
+                    <span class="text-[11px] font-bold text-slate-700 block mb-1">Senarai Kamus Aktif:</span>
+                    <div id="aiTrainingRulesContainer" class="space-y-1.5 max-h-36 overflow-y-auto pr-1"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -72,11 +143,21 @@
                     <p id="custWelcomeBadge" class="text-xs font-bold text-blue-900/90">Pelanggan: Memuat...</p>
                 </div>
             </div>
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 flex-wrap justify-center">
+                <!-- PILIHAN 5 BAHASA -->
+                <div class="flex gap-1 bg-white/40 p-1 rounded-xl">
+                    <button type="button" onclick="changeLang('ms')" id="btnLangMS" class="px-2 py-1 rounded text-[10px] font-bold bg-blue-900 text-white">BM</button>
+                    <button type="button" onclick="changeLang('id')" id="btnLangID" class="px-2 py-1 rounded text-[10px] font-bold bg-yellow-600 text-white">ID</button>
+                    <button type="button" onclick="changeLang('zh')" id="btnLangZH" class="px-2 py-1 rounded text-[10px] font-bold bg-yellow-600 text-white">中文</button>
+                    <button type="button" onclick="changeLang('hi')" id="btnLangHI" class="px-2 py-1 rounded text-[10px] font-bold bg-yellow-600 text-white">हिन्दी</button>
+                    <button type="button" onclick="changeLang('en')" id="btnLangEN" class="px-2 py-1 rounded text-[10px] font-bold bg-yellow-600 text-white">EN</button>
+                </div>
+
                 <button type="button" onclick="scrollToCart()" class="bg-blue-900 hover:bg-blue-800 text-yellow-300 px-3 py-2 rounded-xl text-xs font-bold shadow flex items-center gap-1.5">
-                    🛒 Keranjang (<span id="cartBadgeCount">0</span>)
+                    🛒 <span id="navCartText">Keranjang</span> (<span id="cartBadgeCount">0</span>)
                 </button>
-                <button type="button" onclick="resetCustomerProfile()" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-blue-900 px-2 py-2 rounded-xl font-bold shadow">⚙️ Profil</button>
+                <button type="button" onclick="resetCustomerProfile()" class="text-[10px] bg-slate-100 hover:bg-slate-200 text-blue-900 px-2 py-2 rounded-xl font-bold shadow" id="navProfileText">⚙️ Profil</button>
+                <button type="button" onclick="openAdminLogin()" class="text-[10px] bg-amber-600 hover:bg-amber-700 text-white px-2.5 py-2 rounded-xl font-bold shadow" id="navAdminText">🔐 Admin</button>
             </div>
         </div>
     </header>
@@ -92,13 +173,13 @@
                     </div>
                     <div>
                         <div class="flex items-center gap-2">
-                            <h3 class="font-black text-base text-yellow-300">Asisten Layanan Pelanggan AI</h3>
-                            <span class="bg-emerald-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold">Kamus & Memori Aktif 🧠</span>
+                            <h3 class="font-black text-base text-yellow-300" id="aiAssistantTitle">Asisten Layanan Pelanggan AI</h3>
+                            <span class="bg-emerald-500 text-white text-[9px] px-2 py-0.5 rounded-full font-bold" id="aiMemoryBadge">Kamus & Memori Aktif 🧠</span>
                         </div>
-                        <p class="text-xs text-indigo-200">Taip atau cakap terus dengan mikrofon</p>
+                        <p class="text-xs text-indigo-200" id="aiAssistantSub">Taip atau cakap terus dengan mikrofon</p>
                     </div>
                 </div>
-                <button onclick="speakLastAiMessage()" class="bg-indigo-700 hover:bg-indigo-600 text-white px-3 py-2 rounded-xl text-xs font-bold shadow flex items-center gap-1">
+                <button onclick="speakLastAiMessage()" class="bg-indigo-700 hover:bg-indigo-600 text-white px-3 py-2 rounded-xl text-xs font-bold shadow flex items-center gap-1" id="btnRepeatAudio">
                     🔊 Ulang Suara
                 </button>
             </div>
@@ -115,7 +196,7 @@
                         <i class="fa-solid fa-microphone"></i>
                     </button>
                 </div>
-                <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow">Tanya</button>
+                <button type="submit" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold shadow" id="btnAskAi">Tanya</button>
             </form>
             <div id="micStatusText" class="text-[10px] text-indigo-300 italic hidden">🎙️ Sedang mendengar suara anda... Sila bercakap sekarang.</div>
         </section>
@@ -123,8 +204,8 @@
         <!-- KATALOG PRODUK REAL-TIME -->
         <section class="space-y-4">
             <div class="flex justify-between items-center">
-                <h3 class="text-base font-bold text-emerald-900 uppercase">📦 Katalog Produk Rasmi (Stok Real-Time)</h3>
-                <span class="text-xs text-slate-500">Klik "Tambah ke Keranjang" untuk beli produk</span>
+                <h3 class="text-base font-bold text-emerald-900 uppercase" id="catalogTitle">📦 Katalog Produk Rasmi (Stok Real-Time)</h3>
+                <span class="text-xs text-slate-500" id="catalogSub">Klik "Tambah ke Keranjang" untuk beli produk</span>
             </div>
             <div id="customerProductGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="text-xs text-slate-400 text-center py-6 col-span-2">Memuat senarai produk dari gudang...</div>
@@ -133,16 +214,16 @@
 
         <!-- KERANJANG BELANJA -->
         <section id="cartSection" class="bg-white border-2 border-emerald-500 p-5 rounded-3xl shadow-xl space-y-4">
-            <h3 class="font-bold text-emerald-900 text-base flex items-center gap-2">🛒 Keranjang Belanja & Ringkasan Pesanan</h3>
+            <h3 class="font-bold text-emerald-900 text-base flex items-center gap-2" id="cartSectionTitle">🛒 Keranjang Belanja & Ringkasan Pesanan</h3>
             
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-xs border-collapse">
                     <thead>
                         <tr class="bg-slate-100 border-b text-slate-700">
-                            <th class="p-2">Produk</th>
-                            <th class="p-2 text-center">Kuantiti</th>
-                            <th class="p-2 text-right">Harga (RM)</th>
-                            <th class="p-2 text-center">Tindakan</th>
+                            <th class="p-2" id="thProd">Produk</th>
+                            <th class="p-2 text-center" id="thQty">Kuantiti</th>
+                            <th class="p-2 text-right" id="thPrice">Harga (RM)</th>
+                            <th class="p-2 text-center" id="thAction">Tindakan</th>
                         </tr>
                     </thead>
                     <tbody id="cartTableBody">
@@ -154,7 +235,7 @@
             <div class="space-y-3 bg-slate-50 p-4 rounded-2xl border pt-3">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Pilihan Jasa Pengiriman (Kurier)</label>
+                        <label class="block text-xs font-bold text-slate-700 mb-1" id="lblShipping">Pilihan Jasa Pengiriman (Kurier)</label>
                         <select id="poShippingMethod" onchange="renderCart()" class="w-full border p-2 rounded-xl text-xs bg-white">
                             <option value="J&T Express (RM 8.00)" data-cost="8">J&T Express (RM 8.00)</option>
                             <option value="Pos Laju (RM 7.00)" data-cost="7">Pos Laju (RM 7.00)</option>
@@ -162,7 +243,7 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Kaedah Pembayaran</label>
+                        <label class="block text-xs font-bold text-slate-700 mb-1" id="lblPayment">Kaedah Pembayaran</label>
                         <select id="poPaymentMethod" class="w-full border p-2 rounded-xl text-xs bg-white">
                             <option value="COD (Cash on Delivery / Bayar Masa Sampai)">COD (Bayar Masa Barang Sampai)</option>
                             <option value="Cash / Bank Transfer (Sertakan Bukti)">Cash / Pindahan Bank</option>
@@ -171,11 +252,11 @@
                 </div>
 
                 <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-xs space-y-1">
-                    <div class="flex justify-between"><span>Subtotal Produk:</span><strong id="summarySubtotal">RM 0.00</strong></div>
-                    <div class="flex justify-between"><span>Diskaun Borong (10% jika jumlah &ge; 50 unit):</span><strong id="summaryDiscount" class="text-rose-600">RM 0.00</strong></div>
-                    <div class="flex justify-between"><span>Kos Penghantaran (Ongkir):</span><strong id="summaryShipping">RM 8.00</strong></div>
+                    <div class="flex justify-between"><span id="lblSubtotal">Subtotal Produk:</span><strong id="summarySubtotal">RM 0.00</strong></div>
+                    <div class="flex justify-between"><span id="lblDiscount">Diskaun Borong (10% jika jumlah &ge; 50 unit):</span><strong id="summaryDiscount" class="text-rose-600">RM 0.00</strong></div>
+                    <div class="flex justify-between"><span id="lblShippingCost">Kos Penghantaran (Ongkir):</span><strong id="summaryShipping">RM 8.00</strong></div>
                     <div class="flex justify-between pt-2 border-t border-emerald-300 text-sm font-black text-emerald-950">
-                        <span>Jumlah Keseluruhan (Grand Total):</span>
+                        <span id="lblGrandTotal">Jumlah Keseluruhan (Grand Total):</span>
                         <strong id="summaryGrandTotal">RM 0.00</strong>
                     </div>
                 </div>
@@ -183,7 +264,7 @@
 
             <!-- Pilih Admin WhatsApp Penerima PO -->
             <div class="space-y-2 pt-2">
-                <label class="block text-xs font-bold text-slate-700">Pilih Admin Penerima Pesanan (WhatsApp):</label>
+                <label class="block text-xs font-bold text-slate-700" id="lblSelectAdmin">Pilih Admin Penerima Pesanan (WhatsApp):</label>
                 <div id="adminWhatsappOptionsContainer" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <span class="text-xs text-slate-400">Memuat senarai admin...</span>
                 </div>
@@ -192,7 +273,7 @@
 
         <!-- PLATFORM E-COMMERCE LAIN -->
         <section class="bg-white border-2 border-slate-200 p-5 rounded-3xl shadow-sm space-y-3 text-center">
-            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wide">Atau Beli Melalui Platform Rasmi Kami Yang Lain:</h4>
+            <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wide" id="otherPlatformTitle">Atau Beli Melalui Platform Rasmi Kami Yang Lain:</h4>
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <a href="https://shopee.com.my" target="_blank" class="bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-2xl text-xs font-bold shadow flex items-center justify-center gap-2 transition">
                     <i class="fa-solid fa-bag-shopping text-base"><span>Shopee</span></i>
@@ -234,9 +315,18 @@
         let chatConversationHistory = []; 
         let recognition = null;
         let isRecording = false;
+        let currentLang = localStorage.getItem('medicalpro_lang') || 'ms';
 
-        // KAMUS KOSAKATA MANDIRI (Bisa ditambah sendiri kapan saja untuk kata kunci khusus)
-        const customDictionary = {
+        // Kata sandi admin default & kamus dinamis
+        let masterAdminPassword = "rojak123";
+        let timedGreetingsConfig = {
+            morning: "Selamat pagi, {title} {name}. Selamat datang ke Kedai Rasmi Medicalpro Shop! Pagi yang cerah untuk mulakan kesihatan terbaik.",
+            afternoon: "Selamat tengah hari, {title} {name}. Menjelang tengah hari ini, ada produk herba yang anda cari untuk segarkan badan?",
+            evening: "Selamat petang, {title} {name}. Petang-petang begini paling sesuai minum teh herba kesihatan kita. Ada yang boleh saya bantu?",
+            night: "Selamat malam, {title} {name}. Tenangkan malam anda dengan produk berkualiti Medicalpro. Ada yang ingin anda ketahui?"
+        };
+
+        let customDictionary = {
             "cara minum": "Cara penyediaannya sangat mudah, cukup seduh satu sudu serbuk herba dengan air panas, biarkan suam-suam kuku, lalu diminum.",
             "sakit kepala": "Untuk meredakan sakit kepala ringan, kami sarankan menyeduh Teh Daun Belimbing hangat di pagi hari.",
             "stok habis": "Mohon maaf, jika stok kosong, biasanya hasil panen kebun baru akan tersedia dalam beberapa hari ke depan.",
@@ -244,43 +334,243 @@
             "diskon": "Kami menyediakan potongan diskon borong sebanyak sepuluh persen jika pembelian mencapai lima puluh unit ke atas."
         };
 
-        // FUNGSI PERBAIKAN INTONASI & JEDA (Mengekalkan titik, koma, dan tanda baca penting)
-        function cleanTextForSpeech(text) {
-            if (!text) return "";
-            return text
-                .replace(/<[^>]*>?/gm, '')           // Buang semua tag HTML
-                .replace(/[*_#`~]/g, '')             // Buang simbol markdown (bintang, underscore, dll)
-                .replace(/([.,?!])\s*/g, '$1 ')      // Kekalkan titik, koma, soal, seru dengan jarak spasi yang kemas untuk jeda intonasi
-                .replace(/[^a-zA-Z0-9\s.,?!]/g, ' ') // Buang simbol lain yang tak perlu, tapi izinkan tanda baca asas
-                .replace(/\s+/g, ' ')               // Rapikan spasi berlebihan
-                .trim();
+        const translations = {
+            ms: {
+                navCart: "Keranjang", navProfile: "Profil", navAdmin: "Admin",
+                aiTitle: "Asisten Layanan Pelanggan AI", aiSub: "Taip atau cakap terus dengan mikrofon", aiBadge: "Kamus & Memori Aktif 🧠", btnRepeat: "🔊 Ulang Suara", btnAsk: "Tanya",
+                catalogTitle: "📦 Katalog Produk Rasmi (Stok Real-Time)", catalogSub: "Klik \"Tambah ke Keranjang\" untuk beli produk",
+                cartTitle: "🛒 Keranjang Belanja & Ringkasan Pesanan", thProd: "Produk", thQty: "Kuantiti", thPrice: "Harga (RM)", thAction: "Tindakan",
+                lblShipping: "Pilihan Jasa Pengiriman (Kurier)", lblPayment: "Kaedah Pembayaran", lblSubtotal: "Subtotal Produk:",
+                lblDiscount: "Diskaun Borong (10% jika jumlah &ge; 50 unit):", lblShippingCost: "Kos Penghantaran (Ongkir):", lblGrandTotal: "Jumlah Keseluruhan (Grand Total):",
+                lblSelectAdmin: "Pilih Admin Penerima Pesanan (WhatsApp):", otherPlatform: "Atau Beli Melalui Platform Rasmi Kami Yang Lain:"
+            },
+            id: {
+                navCart: "Keranjang", navProfile: "Profil", navAdmin: "Admin",
+                aiTitle: "Asisten Layanan Pelanggan AI", aiSub: "Ketik atau bicara langsung lewat mikrofon", aiBadge: "Kamus & Memori Aktif 🧠", btnRepeat: "🔊 Ulang Suara", btnAsk: "Tanya",
+                catalogTitle: "📦 Katalog Produk Resmi (Stok Real-Time)", catalogSub: "Klik \"Tambah ke Keranjang\" untuk beli produk",
+                cartTitle: "🛒 Keranjang Belanja & Ringkasan Pesanan", thProd: "Produk", thQty: "Kuantiti", thPrice: "Harga (RM)", thAction: "Tindakan",
+                lblShipping: "Pilihan Jasa Pengiriman (Kurir)", lblPayment: "Metode Pembayaran", lblSubtotal: "Subtotal Produk:",
+                lblDiscount: "Diskon Grosir (10% jika jumlah &ge; 50 unit):", lblShippingCost: "Biaya Pengiriman (Ongkir):", lblGrandTotal: "Jumlah Keseluruhan (Grand Total):",
+                lblSelectAdmin: "Pilih Admin Penerima Pesanan (WhatsApp):", otherPlatform: "Atau Beli Melalui Platform Resmi Kami Yang Lain:"
+            },
+            zh: {
+                navCart: "购物车", navProfile: "个人资料", navAdmin: "管理员",
+                aiTitle: "AI 客服助手", aiSub: "直接输入文字或通过麦克风对话", aiBadge: "词典与记忆已激活 🧠", btnRepeat: "🔊 重复语音", btnAsk: "询问",
+                catalogTitle: "📦 官方产品目录 (实时库存)", catalogSub: "点击“加入购物车”购买产品",
+                cartTitle: "🛒 购物车与订单摘要", thProd: "产品", thQty: "数量", thPrice: "价格 (RM)", thAction: "操作",
+                lblShipping: "配送方式 (快递)", lblPayment: "付款方式", lblSubtotal: "产品小计:",
+                lblDiscount: "批发折扣 (满50件享9折):", lblShippingCost: "运费:", lblGrandTotal: "总计 (Grand Total):",
+                lblSelectAdmin: "选择接收订单的管理员 (WhatsApp):", otherPlatform: "或通过我们的其他官方平台购买:"
+            },
+            hi: {
+                navCart: "कार्ट", navProfile: "प्रोफाइल", navAdmin: "एडमिन",
+                aiTitle: "AI ग्राहक सेवा सहायक", aiSub: "टाइप करें या माइक्रोफ़ोन से बोलें", aiBadge: "शब्दकोश और मेमोरी सक्रिय 🧠", btnRepeat: "🔊 आवाज दोहराएं", btnAsk: "पूछें",
+                catalogTitle: "📦 आधिकारिक उत्पाद सूची (रीयल-टाइम स्टॉक)", catalogSub: "उत्पाद खरीदने के लिए \"कार्ट में जोड़ें\" पर क्लिक करें",
+                cartTitle: "🛒 शॉपिंग कार्ट और ऑर्डर सारांश", thProd: "उत्पाद", thQty: "मात्रा", thPrice: "मूल्य (RM)", thAction: "कार्रवाई",
+                lblShipping: "शिपिंग विधि (कूरियर)", lblPayment: "भुगतान का तरीका", lblSubtotal: "उत्पाद उपकुल:",
+                lblDiscount: "थोक छूट (10% यदि मात्रा &ge; 50 इकाई):", lblShippingCost: "शिपिंग लागत:", lblGrandTotal: "कुल राशि (Grand Total):",
+                lblSelectAdmin: "ऑर्डर प्राप्त करने वाला एडमिन चुनें (WhatsApp):", otherPlatform: "या हमारे अन्य आधिकारिक प्लेटफार्मों के माध्यम से खरीदें:"
+            },
+            en: {
+                navCart: "Cart", navProfile: "Profile", navAdmin: "Admin",
+                aiTitle: "AI Customer Service Assistant", aiSub: "Type or speak directly into the microphone", aiBadge: "Dictionary & Memory Active 🧠", btnRepeat: "🔊 Repeat Audio", btnAsk: "Ask",
+                catalogTitle: "📦 Official Product Catalog (Real-Time Stock)", catalogSub: "Click \"Add to Cart\" to purchase products",
+                cartTitle: "🛒 Shopping Cart & Order Summary", thProd: "Product", thQty: "Quantity", thPrice: "Price (RM)", thAction: "Action",
+                lblShipping: "Shipping Method (Courier)", lblPayment: "Payment Method", lblSubtotal: "Product Subtotal:",
+                lblDiscount: "Wholesale Discount (10% if qty &ge; 50 units):", lblShippingCost: "Shipping Cost:", lblGrandTotal: "Grand Total:",
+                lblSelectAdmin: "Select Admin to Receive Order (WhatsApp):", otherPlatform: "Or Buy Through Our Other Official Platforms:"
+            }
+        };
+
+        function changeLang(lang) {
+            currentLang = lang;
+            localStorage.setItem('medicalpro_lang', lang);
+            applyLanguage();
         }
 
-        // Fungsi Text-to-Speech (AI Bersuara dengan Jeda Semulajadi)
+        function applyLanguage() {
+            let t = translations[currentLang] || translations['ms'];
+            ['ms', 'id', 'zh', 'hi', 'en'].forEach(l => {
+                let btn = document.getElementById('btnLang' + l.toUpperCase());
+                if (btn) {
+                    btn.className = l === currentLang ? "px-2 py-1 rounded text-[10px] font-bold bg-blue-900 text-white" : "px-2 py-1 rounded text-[10px] font-bold bg-yellow-600 text-white";
+                }
+            });
+
+            document.getElementById('navCartText').innerText = t.navCart;
+            document.getElementById('navProfileText').innerText = t.navProfile;
+            document.getElementById('navAdminText').innerText = t.navAdmin;
+            document.getElementById('aiAssistantTitle').innerText = t.aiTitle;
+            document.getElementById('aiAssistantSub').innerText = t.aiSub;
+            document.getElementById('aiMemoryBadge').innerText = t.aiBadge;
+            document.getElementById('btnRepeatAudio').innerText = t.btnRepeat;
+            document.getElementById('btnAsk').innerText = t.btnAsk;
+            document.getElementById('catalogTitle').innerText = t.catalogTitle;
+            document.getElementById('catalogSub').innerText = t.catalogSub;
+            document.getElementById('cartSectionTitle').innerText = t.cartTitle;
+            document.getElementById('thProd').innerText = t.thProd;
+            document.getElementById('thQty').innerText = t.thQty;
+            document.getElementById('thPrice').innerText = t.thPrice;
+            document.getElementById('thAction').innerText = t.thAction;
+            document.getElementById('lblShipping').innerText = t.lblShipping;
+            document.getElementById('lblPayment').innerText = t.lblPayment;
+            document.getElementById('lblSubtotal').innerText = t.lblSubtotal;
+            document.getElementById('lblDiscount').innerText = t.lblDiscount;
+            document.getElementById('lblShippingCost').innerText = t.lblShippingCost;
+            document.getElementById('lblGrandTotal').innerText = t.lblGrandTotal;
+            document.getElementById('lblSelectAdmin').innerText = t.lblSelectAdmin;
+            document.getElementById('otherPlatformTitle').innerText = t.otherPlatform;
+        }
+
+        // Sinkronisasi data dari Firebase Firestore
+        if (db) {
+            db.collection("office_products").onSnapshot(snap => {
+                let officeItems = [];
+                snap.forEach(d => officeItems.push({ id: d.id, ...d.data() }));
+                updateCombinedProducts(officeItems);
+            });
+
+            db.collection("settings").doc("admin_whatsapp").onSnapshot(doc => {
+                if (doc.exists && doc.data().list) {
+                    fetchedAdmins = doc.data().list;
+                    renderAdminWhatsappOptions();
+                }
+            });
+
+            // Ambil tetapan admin khusus dari Cloud
+            db.collection("settings").doc("system_admin_config").onSnapshot(doc => {
+                if (doc.exists) {
+                    let data = doc.data();
+                    if (data.masterPassword) masterAdminPassword = data.masterPassword;
+                    if (data.timedGreetings) timedGreetingsConfig = data.timedGreetings;
+                    if (data.dictionary) customDictionary = data.dictionary;
+                    renderAiTrainingRules();
+                }
+            });
+        }
+
+        function openAdminLogin() { document.getElementById('adminLoginModal').classList.remove('hidden'); }
+        function closeAdminLogin() { document.getElementById('adminLoginModal').classList.add('hidden'); }
+        function closeAdminDashboard() { document.getElementById('adminDashboardModal').classList.add('hidden'); }
+
+        function verifyAdmin() {
+            let pass = document.getElementById('adminPasswordInput').value.trim();
+            if (pass === masterAdminPassword) {
+                closeAdminLogin();
+                document.getElementById('adminDashboardModal').classList.remove('hidden');
+                loadAdminSettingsUI();
+            } else {
+                alert("Kata laluan salah!");
+            }
+        }
+
+        function saveAdminPasswordSetting() {
+            let newPass = document.getElementById('newAdminPassword').value.trim();
+            if (!newPass) { alert("Sila masukkan kata laluan baru!"); return; }
+            masterAdminPassword = newPass;
+            if (db) {
+                db.collection("settings").doc("system_admin_config").set({
+                    masterPassword: newPass,
+                    timedGreetings: timedGreetingsConfig,
+                    dictionary: customDictionary
+                }, { merge: true }).then(() => {
+                    alert("Kata laluan admin berjaya dikemaskini!");
+                    document.getElementById('newAdminPassword').value = "";
+                });
+            }
+        }
+
+        function loadAdminSettingsUI() {
+            document.getElementById('greetingMorning').value = timedGreetingsConfig.morning || "";
+            document.getElementById('greetingAfternoon').value = timedGreetingsConfig.afternoon || "";
+            document.getElementById('greetingEvening').value = timedGreetingsConfig.evening || "";
+            document.getElementById('greetingNight').value = timedGreetingsConfig.night || "";
+            renderAiTrainingRules();
+        }
+
+        function saveTimedGreetings() {
+            timedGreetingsConfig = {
+                morning: document.getElementById('greetingMorning').value,
+                afternoon: document.getElementById('greetingAfternoon').value,
+                evening: document.getElementById('greetingEvening').value,
+                night: document.getElementById('greetingNight').value
+            };
+            if (db) {
+                db.collection("settings").doc("system_admin_config").set({ timedGreetings: timedGreetingsConfig }, { merge: true }).then(() => {
+                    alert("Kata sambutan mengikut waktu berjaya disimpan!");
+                });
+            }
+        }
+
+        function saveAiTrainingRule() {
+            let keyword = document.getElementById('aiTrainKeyword').value.trim().toLowerCase();
+            let answer = document.getElementById('aiTrainAnswer').value.trim();
+            if (!keyword || !answer) { alert("Sila isi kata kunci dan jawapan!"); return; }
+            
+            customDictionary[keyword] = answer;
+            if (db) {
+                db.collection("settings").doc("system_admin_config").set({ dictionary: customDictionary }, { merge: true }).then(() => {
+                    document.getElementById('aiTrainKeyword').value = "";
+                    document.getElementById('aiTrainAnswer').value = "";
+                    renderAiTrainingRules();
+                    alert("Kamus ingatan AI berjaya ditambah!");
+                });
+            }
+        }
+
+        function deleteAiTrainingRule(key) {
+            delete customDictionary[key];
+            if (db) {
+                db.collection("settings").doc("system_admin_config").set({ dictionary: customDictionary }, { merge: true }).then(() => {
+                    renderAiTrainingRules();
+                });
+            }
+        }
+
+        function renderAiTrainingRules() {
+            let container = document.getElementById('aiTrainingRulesContainer');
+            if (!container) return;
+            container.innerHTML = "";
+            let keys = Object.keys(customDictionary);
+            if (keys.length === 0) {
+                container.innerHTML = `<span class="text-[11px] text-slate-400">Tiada kamus tambahan.</span>`;
+                return;
+            }
+            keys.forEach(k => {
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-white p-2 rounded border text-xs">
+                        <div><b>[${k}]</b>: ${customDictionary[k]}</div>
+                        <button type="button" onclick="deleteAiTrainingRule('${k}')" class="text-rose-600 font-bold px-1.5 py-0.5 text-[10px]">Padam</button>
+                    </div>
+                `;
+            });
+        }
+
+        function cleanTextForSpeech(text) {
+            if (!text) return "";
+            return text.replace(/<[^>]*>?/gm, '').replace(/[*_#`~]/g, '').replace(/([.,?!])\s*/g, '$1 ').replace(/[^a-zA-Z0-9\s.,?!]/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+
         function speakText(text) {
             let cleanSpeech = cleanTextForSpeech(text);
             lastSpokenText = cleanSpeech;
             if ('speechSynthesis' in window) {
                 window.speechSynthesis.cancel();
                 const utterance = new SpeechSynthesisUtterance(cleanSpeech);
-                utterance.lang = 'ms-MY';
-                utterance.rate = 0.95; // Sedikit santai kelajuannya supaya ada intonasi hidup
+                utterance.lang = currentLang === 'id' ? 'id-ID' : (currentLang === 'zh' ? 'zh-CN' : (currentLang === 'hi' ? 'hi-IN' : (currentLang === 'en' ? 'en-US' : 'ms-MY')));
+                utterance.rate = 0.95;
                 window.speechSynthesis.speak(utterance);
             }
         }
         function speakLastAiMessage() { if (lastSpokenText) speakText(lastSpokenText); }
 
-        // Fungsi Speech-to-Text (Pelanggan Bercakap dengan Mikrofon)
         function toggleSpeechRecognition() {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) {
-                alert("Maaf, pelayar anda tidak menyokong pengecaman suara.");
-                return;
-            }
+            if (!SpeechRecognition) { alert("Pelayar tidak menyokong pengecaman suara."); return; }
 
             if (!recognition) {
                 recognition = new SpeechRecognition();
-                recognition.lang = 'ms-MY';
+                recognition.lang = currentLang === 'id' ? 'id-ID' : (currentLang === 'zh' ? 'zh-CN' : (currentLang === 'en' ? 'en-US' : 'ms-MY'));
                 recognition.interimResults = false;
                 recognition.maxAlternatives = 1;
 
@@ -300,8 +590,7 @@
                 recognition.onend = () => { stopMicUI(); };
             }
 
-            if (isRecording) { recognition.stop(); } 
-            else { recognition.start(); }
+            if (isRecording) { recognition.stop(); } else { recognition.start(); }
         }
 
         function stopMicUI() {
@@ -325,19 +614,20 @@
 
         function getTimedGreeting() {
             const hour = new Date().getHours();
-            if (hour >= 4 && hour < 12) return "Selamat Pagi";
-            else if (hour >= 12 && hour < 15) return "Selamat Tengah Hari";
-            else if (hour >= 15 && hour < 19) return "Selamat Petang";
-            else return "Selamat Malam";
+            let title = customerProfile ? customerProfile.gender : "Tuan";
+            let name = customerProfile ? customerProfile.name : "Pelanggan";
+            let template = "";
+
+            if (hour >= 4 && hour < 12) template = timedGreetingsConfig.morning;
+            else if (hour >= 12 && hour < 15) template = timedGreetingsConfig.afternoon;
+            else if (hour >= 15 && hour < 19) template = timedGreetingsConfig.evening;
+            else template = timedGreetingsConfig.night;
+
+            return template.replace("{title}", title).replace("{name}", name);
         }
 
         function initCustomerGreeting() {
-            let title = customerProfile.gender || "Tuan";
-            let name = customerProfile.name || "Pelanggan";
-            let timeGreeting = getTimedGreeting();
-            
-            let greeting = `${timeGreeting}, ${title} ${name}. Selamat datang ke Kedai Rasmi Medicalpro Shop! Saya Asisten AI anda. Ada produk herba yang anda cari, atau ingin saya bantu jelaskan khasiatnya?`;
-            
+            let greeting = getTimedGreeting();
             chatConversationHistory.push({ sender: 'ai', text: greeting });
             renderChatHistory();
             speakText(greeting);
@@ -388,22 +678,6 @@
             if (badge && customerProfile) {
                 badge.innerText = `${customerProfile.gender} ${customerProfile.name}`;
             }
-        }
-
-        if (db) {
-            // Sinkronisasi real-time produk office dari aplikasi Kebun Medical Pro
-            db.collection("office_products").onSnapshot(snap => {
-                let officeItems = [];
-                snap.forEach(d => officeItems.push({ id: d.id, ...d.data() }));
-                updateCombinedProducts(officeItems);
-            });
-
-            db.collection("settings").doc("admin_whatsapp").onSnapshot(doc => {
-                if (doc.exists && doc.data().list) {
-                    fetchedAdmins = doc.data().list;
-                    renderAdminWhatsappOptions();
-                }
-            });
         }
 
         function updateCombinedProducts(officeList) {
@@ -468,9 +742,7 @@
             renderCart();
         }
 
-        function scrollToCart() {
-            document.getElementById('cartSection').scrollIntoView({ behavior: 'smooth' });
-        }
+        function scrollToCart() { document.getElementById('cartSection').scrollIntoView({ behavior: 'smooth' }); }
 
         function renderCart() {
             const tbody = document.getElementById('cartTableBody');
@@ -559,7 +831,6 @@
             let invNo = `PO-${Date.now().toString().slice(-6)}`;
             let todayStr = new Date().toISOString().substring(0, 10);
 
-            // Format data untuk disimpan ke Firebase agar langsung muncul di Admin secara real-time
             let orderData = {
                 invoiceNo: invNo,
                 date: todayStr,
@@ -575,7 +846,6 @@
                 trackingNo: ""
             };
 
-            // Simpan ke Firestore (Koleksi: customer_orders)
             if (db) {
                 db.collection("customer_orders").add(orderData).then(() => {
                     let productDetailsText = cartItems.map((item, i) => `${i+1}. ${item.name} (${item.qty} unit x RM ${item.price.toFixed(2)})`).join('\n');
@@ -603,7 +873,6 @@
             }
         }
 
-        // --- MENYIMPAN KOSAKATA & PERCAKAPAN KE CLOUD (GLOBAL MEMORY) ---
         function saveConversationToCloud(customerText, aiResponseText) {
             if (!db) return;
             db.collection("ai_global_vocabulary").add({
@@ -616,7 +885,6 @@
             });
         }
 
-        // --- SISTEM AI PINTAR: KAMUS + DATABASE KEBUN + BERSIH TOTAL ---
         function handleCustomerAiQuery(e) {
             e.preventDefault();
             const inputVal = document.getElementById('custAiInput').value;
@@ -633,12 +901,10 @@
             let matchedDictionaryKey = Object.keys(customDictionary).find(key => lowerInput.includes(key));
             let matchedProduct = null;
 
-            // 1. Periksa dulu apakah pertanyaan sesuai dengan Kamus Kosakata Tambahan
             if (matchedDictionaryKey) {
                 responseText = `Ya, ${customerProfile.gender} ${customerProfile.name}. ${customDictionary[matchedDictionaryKey]}`;
             } 
             else {
-                // 2. Jika tidak di kamus, cocokan langsung dengan data produk dari database office_products
                 for (let p of fetchedProducts) {
                     let pName = p.name ? p.name.toLowerCase() : "";
                     let pBenefits = (p.benefits || p.desc || p.khasiat || "").toLowerCase();
@@ -660,12 +926,6 @@
                     let otherProducts = fetchedProducts.slice(0, 3).map(p => p.name).join(', ');
                     responseText = `Selain itu, ${customerProfile.gender}, kami juga ada produk pilihan seperti ${otherProducts}. Semuanya sangat bagus untuk kesihatan harian. Berminat untuk mencubanya?`;
                 }
-                else if (lowerInput.includes('letih') || lowerInput.includes('tenaga') || lowerInput.includes('lesu')) {
-                    responseText = `Untuk masalah keletihan, ${customerProfile.gender} ${customerProfile.name}, kami ada menyediakan produk penambah tenaga semulajadi. Mahu saya kongsikan senarai produknya?`;
-                } 
-                else if (lowerInput.includes('darah tinggi') || lowerInput.includes('kencing manis') || lowerInput.includes('gula')) {
-                    responseText = `Untuk kawalan kesihatan dalaman, penawar herba dari kebun kami sangat membantu. Anda boleh menyemak butirannya di bahagian katalog bawah.`;
-                } 
                 else {
                     responseText = `Baik, ${customerProfile.gender} ${customerProfile.name}. Mengenai "${text}", anda boleh memilih produk terus di katalog bawah, atau beritahu saya jika anda perlukan cadangan produk kesihatan yang lain.`;
                 }
@@ -676,11 +936,11 @@
             speakText(responseText);
             document.getElementById('custAiInput').value = "";
 
-            // Simpan kosakata dan percakapan ke Cloud Firestore
             saveConversationToCloud(text, responseText);
         }
 
         window.addEventListener('DOMContentLoaded', () => {
+            applyLanguage();
             checkCustomerProfile();
             renderCart();
         });
