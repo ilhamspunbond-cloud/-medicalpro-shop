@@ -18,6 +18,16 @@
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans pb-24">
 
+    <!-- MODAL NOTIFIKASI / ALERT ELEGAN -->
+    <div id="popupAlertModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm hidden">
+        <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl space-y-4 text-center border-2 border-emerald-500">
+            <div class="w-16 h-16 rounded-full bg-emerald-100 mx-auto flex items-center justify-center text-3xl">🚀</div>
+            <h3 class="font-bold text-emerald-900 text-base" id="alertModalTitle">Pesanan Berjaya Dihantar!</h3>
+            <p class="text-xs text-slate-600 leading-relaxed" id="alertModalDesc">PO anda telah direkodkan ke sistem dan WhatsApp admin sedang dibuka. Sila hantar mesej tersebut kepada admin.</p>
+            <button type="button" onclick="closePopupAlert()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-bold shadow">Baik, Faham</button>
+        </div>
+    </div>
+
     <!-- MODAL PENDAFTARAN PELANGGAN -->
     <div id="customerProfileModal" class="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50 backdrop-blur-sm hidden">
         <div class="bg-white p-6 rounded-3xl max-w-sm w-full shadow-2xl space-y-4 border-2 border-emerald-500">
@@ -93,7 +103,6 @@
             <!-- Pengurusan Kata Sambutan Mengikut Waktu -->
             <div class="bg-slate-50 border p-4 rounded-2xl space-y-3">
                 <h4 class="font-bold text-slate-800 text-xs">⏰ Tetapan Kata Sambutan AI Mengikut Waktu</h4>
-                <p class="text-[11px] text-slate-500">Ubah kata sambutan agar pelanggan tidak mendengar ayat yang sama setiap masa (boleh selit pantun atau gaya bahasa cair).</p>
                 <div class="space-y-2">
                     <div>
                         <label class="block text-[10px] font-bold text-slate-700">Pagi (04:00 - 11:59)</label>
@@ -144,6 +153,15 @@
                 </div>
             </div>
             <div class="flex items-center gap-2 flex-wrap justify-center">
+                <!-- PILIHAN MATA WANG REAL-TIME -->
+                <select id="currencySelector" onchange="changeCurrency(this.value)" class="bg-blue-900 text-yellow-300 px-2 py-1.5 rounded-xl text-xs font-bold border border-yellow-400 focus:outline-none">
+                    <option value="MYR">MYR (RM)</option>
+                    <option value="IDR">IDR (Rp)</option>
+                    <option value="USD">USD ($)</option>
+                    <option value="SGD">SGD (S$)</option>
+                    <option value="CNY">CNY (¥)</option>
+                </select>
+
                 <!-- PILIHAN 5 BAHASA -->
                 <div class="flex gap-1 bg-white/40 p-1 rounded-xl">
                     <button type="button" onclick="changeLang('ms')" id="btnLangMS" class="px-2 py-1 rounded text-[10px] font-bold bg-blue-900 text-white">BM</button>
@@ -222,7 +240,7 @@
                         <tr class="bg-slate-100 border-b text-slate-700">
                             <th class="p-2" id="thProd">Produk</th>
                             <th class="p-2 text-center" id="thQty">Kuantiti</th>
-                            <th class="p-2 text-right" id="thPrice">Harga (RM)</th>
+                            <th class="p-2 text-right" id="thPrice">Harga</th>
                             <th class="p-2 text-center" id="thAction">Tindakan</th>
                         </tr>
                     </thead>
@@ -237,9 +255,9 @@
                     <div>
                         <label class="block text-xs font-bold text-slate-700 mb-1" id="lblShipping">Pilihan Jasa Pengiriman (Kurier)</label>
                         <select id="poShippingMethod" onchange="renderCart()" class="w-full border p-2 rounded-xl text-xs bg-white">
-                            <option value="J&T Express (RM 8.00)" data-cost="8">J&T Express (RM 8.00)</option>
-                            <option value="Pos Laju (RM 7.00)" data-cost="7">Pos Laju (RM 7.00)</option>
-                            <option value="Penghantaran Estet / COD Tempatan (RM 5.00)" data-cost="5">Penghantaran Estet / COD Tempatan (RM 5.00)</option>
+                            <option value="J&T Express" data-cost="8">J&T Express</option>
+                            <option value="Pos Laju" data-cost="7">Pos Laju</option>
+                            <option value="Penghantaran Estet / COD Tempatan" data-cost="5">Penghantaran Estet / COD Tempatan</option>
                         </select>
                     </div>
                     <div>
@@ -252,12 +270,12 @@
                 </div>
 
                 <div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200 text-xs space-y-1">
-                    <div class="flex justify-between"><span id="lblSubtotal">Subtotal Produk:</span><strong id="summarySubtotal">RM 0.00</strong></div>
-                    <div class="flex justify-between"><span id="lblDiscount">Diskaun Borong (10% jika jumlah &ge; 50 unit):</span><strong id="summaryDiscount" class="text-rose-600">RM 0.00</strong></div>
-                    <div class="flex justify-between"><span id="lblShippingCost">Kos Penghantaran (Ongkir):</span><strong id="summaryShipping">RM 8.00</strong></div>
+                    <div class="flex justify-between"><span id="lblSubtotal">Subtotal Produk:</span><strong id="summarySubtotal">0.00</strong></div>
+                    <div class="flex justify-between"><span id="lblDiscount">Diskaun Borong (10% jika jumlah &ge; 50 unit):</span><strong id="summaryDiscount" class="text-rose-600">0.00</strong></div>
+                    <div class="flex justify-between"><span id="lblShippingCost">Kos Penghantaran (Ongkir):</span><strong id="summaryShipping">0.00</strong></div>
                     <div class="flex justify-between pt-2 border-t border-emerald-300 text-sm font-black text-emerald-950">
                         <span id="lblGrandTotal">Jumlah Keseluruhan (Grand Total):</span>
-                        <strong id="summaryGrandTotal">RM 0.00</strong>
+                        <strong id="summaryGrandTotal">0.00</strong>
                     </div>
                 </div>
             </div>
@@ -316,8 +334,46 @@
         let recognition = null;
         let isRecording = false;
         let currentLang = localStorage.getItem('medicalpro_lang') || 'ms';
+        let currentCurrency = localStorage.getItem('medicalpro_currency') || 'MYR';
 
-        // Kata sandi admin default & kamus dinamis
+        let exchangeRates = {
+            MYR: { rate: 1.0, symbol: 'RM' },
+            IDR: { rate: 3650.0, symbol: 'Rp' },
+            USD: { rate: 0.22, symbol: '$' },
+            SGD: { rate: 0.29, symbol: 'S$' },
+            CNY: { rate: 1.60, symbol: '¥' }
+        };
+
+        async function fetchLiveExchangeRates() {
+            try {
+                let res = await fetch('https://api.exchangerate-api.com/v4/latest/MYR');
+                let data = await res.json();
+                if (data && data.rates) {
+                    exchangeRates.IDR.rate = data.rates.IDR || 3650;
+                    exchangeRates.USD.rate = data.rates.USD || 0.22;
+                    exchangeRates.SGD.rate = data.rates.SGD || 0.29;
+                    exchangeRates.CNY.rate = data.rates.CNY || 1.60;
+                }
+            } catch(e) {}
+        }
+
+        function formatMoney(amountInMYR) {
+            let curr = exchangeRates[currentCurrency] || exchangeRates['MYR'];
+            let converted = amountInMYR * curr.rate;
+            if (currentCurrency === 'IDR') {
+                return `${curr.symbol} ${Math.round(converted).toLocaleString('id-ID')}`;
+            }
+            return `${curr.symbol} ${converted.toFixed(2)}`;
+        }
+
+        function changeCurrency(currCode) {
+            currentCurrency = currCode;
+            localStorage.setItem('medicalpro_currency', currCode);
+            document.getElementById('currencySelector').value = currCode;
+            updateCombinedProducts(fetchedProducts);
+            renderCart();
+        }
+
         let masterAdminPassword = "rojak123";
         let timedGreetingsConfig = {
             morning: "Selamat pagi, {title} {name}. Selamat datang ke Kedai Rasmi Medicalpro Shop! Pagi yang cerah untuk mulakan kesihatan terbaik.",
@@ -339,7 +395,7 @@
                 navCart: "Keranjang", navProfile: "Profil", navAdmin: "Admin",
                 aiTitle: "Asisten Layanan Pelanggan AI", aiSub: "Taip atau cakap terus dengan mikrofon", aiBadge: "Kamus & Memori Aktif 🧠", btnRepeat: "🔊 Ulang Suara", btnAsk: "Tanya",
                 catalogTitle: "📦 Katalog Produk Rasmi (Stok Real-Time)", catalogSub: "Klik \"Tambah ke Keranjang\" untuk beli produk",
-                cartTitle: "🛒 Keranjang Belanja & Ringkasan Pesanan", thProd: "Produk", thQty: "Kuantiti", thPrice: "Harga (RM)", thAction: "Tindakan",
+                cartTitle: "🛒 Keranjang Belanja & Ringkasan Pesanan", thProd: "Produk", thQty: "Kuantiti", thPrice: "Harga", thAction: "Tindakan",
                 lblShipping: "Pilihan Jasa Pengiriman (Kurier)", lblPayment: "Kaedah Pembayaran", lblSubtotal: "Subtotal Produk:",
                 lblDiscount: "Diskaun Borong (10% jika jumlah &ge; 50 unit):", lblShippingCost: "Kos Penghantaran (Ongkir):", lblGrandTotal: "Jumlah Keseluruhan (Grand Total):",
                 lblSelectAdmin: "Pilih Admin Penerima Pesanan (WhatsApp):", otherPlatform: "Atau Beli Melalui Platform Rasmi Kami Yang Lain:"
@@ -348,16 +404,16 @@
                 navCart: "Keranjang", navProfile: "Profil", navAdmin: "Admin",
                 aiTitle: "Asisten Layanan Pelanggan AI", aiSub: "Ketik atau bicara langsung lewat mikrofon", aiBadge: "Kamus & Memori Aktif 🧠", btnRepeat: "🔊 Ulang Suara", btnAsk: "Tanya",
                 catalogTitle: "📦 Katalog Produk Resmi (Stok Real-Time)", catalogSub: "Klik \"Tambah ke Keranjang\" untuk beli produk",
-                cartTitle: "🛒 Keranjang Belanja & Ringkasan Pesanan", thProd: "Produk", thQty: "Kuantiti", thPrice: "Harga (RM)", thAction: "Tindakan",
+                cartTitle: "🛒 Keranjang Belanja & Ringkasan Pesanan", thProd: "Produk", thQty: "Kuantiti", thPrice: "Harga", thAction: "Tindakan",
                 lblShipping: "Pilihan Jasa Pengiriman (Kurir)", lblPayment: "Metode Pembayaran", lblSubtotal: "Subtotal Produk:",
                 lblDiscount: "Diskon Grosir (10% jika jumlah &ge; 50 unit):", lblShippingCost: "Biaya Pengiriman (Ongkir):", lblGrandTotal: "Jumlah Keseluruhan (Grand Total):",
-                lblSelectAdmin: "Pilih Admin Penerima Pesanan (WhatsApp):", otherPlatform: "Atau Beli Melalui Platform Resmi Kami Yang Lain:"
+                lblSelectAdmin: "Select Admin Penerima Pesanan (WhatsApp):", otherPlatform: "Atau Beli Melalui Platform Resmi Kami Yang Lain:"
             },
             zh: {
                 navCart: "购物车", navProfile: "个人资料", navAdmin: "管理员",
                 aiTitle: "AI 客服助手", aiSub: "直接输入文字或通过麦克风对话", aiBadge: "词典与记忆已激活 🧠", btnRepeat: "🔊 重复语音", btnAsk: "询问",
                 catalogTitle: "📦 官方产品目录 (实时库存)", catalogSub: "点击“加入购物车”购买产品",
-                cartTitle: "🛒 购物车与订单摘要", thProd: "产品", thQty: "数量", thPrice: "价格 (RM)", thAction: "操作",
+                cartTitle: "🛒 购物车与订单摘要", thProd: "产品", thQty: "数量", thPrice: "价格", thAction: "操作",
                 lblShipping: "配送方式 (快递)", lblPayment: "付款方式", lblSubtotal: "产品小计:",
                 lblDiscount: "批发折扣 (满50件享9折):", lblShippingCost: "运费:", lblGrandTotal: "总计 (Grand Total):",
                 lblSelectAdmin: "选择接收订单的管理员 (WhatsApp):", otherPlatform: "或通过我们的其他官方平台购买:"
@@ -366,7 +422,7 @@
                 navCart: "कार्ट", navProfile: "प्रोफाइल", navAdmin: "एडमिन",
                 aiTitle: "AI ग्राहक सेवा सहायक", aiSub: "टाइप करें या माइक्रोफ़ोन से बोलें", aiBadge: "शब्दकोश और मेमोरी सक्रिय 🧠", btnRepeat: "🔊 आवाज दोहराएं", btnAsk: "पूछें",
                 catalogTitle: "📦 आधिकारिक उत्पाद सूची (रीयल-टाइम स्टॉक)", catalogSub: "उत्पाद खरीदने के लिए \"कार्ट में जोड़ें\" पर क्लिक करें",
-                cartTitle: "🛒 शॉपिंग कार्ट और ऑर्डर सारांश", thProd: "उत्पाद", thQty: "मात्रा", thPrice: "मूल्य (RM)", thAction: "कार्रवाई",
+                cartTitle: "🛒 शॉपिंग कार्ट और ऑर्डर सारांश", thProd: "उत्पाद", thQty: "मात्रा", thPrice: "मूल्य", thAction: "कार्रवाई",
                 lblShipping: "शिपिंग विधि (कूरियर)", lblPayment: "भुगतान का तरीका", lblSubtotal: "उत्पाद उपकुल:",
                 lblDiscount: "थोक छूट (10% यदि मात्रा &ge; 50 इकाई):", lblShippingCost: "शिपिंग लागत:", lblGrandTotal: "कुल राशि (Grand Total):",
                 lblSelectAdmin: "ऑर्डर प्राप्त करने वाला एडमिन चुनें (WhatsApp):", otherPlatform: "या हमारे अन्य आधिकारिक प्लेटफार्मों के माध्यम से खरीदें:"
@@ -375,7 +431,7 @@
                 navCart: "Cart", navProfile: "Profile", navAdmin: "Admin",
                 aiTitle: "AI Customer Service Assistant", aiSub: "Type or speak directly into the microphone", aiBadge: "Dictionary & Memory Active 🧠", btnRepeat: "🔊 Repeat Audio", btnAsk: "Ask",
                 catalogTitle: "📦 Official Product Catalog (Real-Time Stock)", catalogSub: "Click \"Add to Cart\" to purchase products",
-                cartTitle: "🛒 Shopping Cart & Order Summary", thProd: "Product", thQty: "Quantity", thPrice: "Price (RM)", thAction: "Action",
+                cartTitle: "🛒 Shopping Cart & Order Summary", thProd: "Product", thQty: "Quantity", thPrice: "Price", thAction: "Action",
                 lblShipping: "Shipping Method (Courier)", lblPayment: "Payment Method", lblSubtotal: "Product Subtotal:",
                 lblDiscount: "Wholesale Discount (10% if qty &ge; 50 units):", lblShippingCost: "Shipping Cost:", lblGrandTotal: "Grand Total:",
                 lblSelectAdmin: "Select Admin to Receive Order (WhatsApp):", otherPlatform: "Or Buy Through Our Other Official Platforms:"
@@ -404,7 +460,7 @@
             document.getElementById('aiAssistantSub').innerText = t.aiSub;
             document.getElementById('aiMemoryBadge').innerText = t.aiBadge;
             document.getElementById('btnRepeatAudio').innerText = t.btnRepeat;
-            document.getElementById('btnAsk').innerText = t.btnAsk;
+            document.getElementById('btnAskAi').innerText = t.btnAsk;
             document.getElementById('catalogTitle').innerText = t.catalogTitle;
             document.getElementById('catalogSub').innerText = t.catalogSub;
             document.getElementById('cartSectionTitle').innerText = t.cartTitle;
@@ -422,7 +478,6 @@
             document.getElementById('otherPlatformTitle').innerText = t.otherPlatform;
         }
 
-        // Sinkronisasi data dari Firebase Firestore
         if (db) {
             db.collection("office_products").onSnapshot(snap => {
                 let officeItems = [];
@@ -437,7 +492,6 @@
                 }
             });
 
-            // Ambil tetapan admin khusus dari Cloud
             db.collection("settings").doc("system_admin_config").onSnapshot(doc => {
                 if (doc.exists) {
                     let data = doc.data();
@@ -452,6 +506,7 @@
         function openAdminLogin() { document.getElementById('adminLoginModal').classList.remove('hidden'); }
         function closeAdminLogin() { document.getElementById('adminLoginModal').classList.add('hidden'); }
         function closeAdminDashboard() { document.getElementById('adminDashboardModal').classList.add('hidden'); }
+        function closePopupAlert() { document.getElementById('popupAlertModal').classList.add('hidden'); }
 
         function verifyAdmin() {
             let pass = document.getElementById('adminPasswordInput').value.trim();
@@ -696,13 +751,15 @@
                 let stockStatus = p.stock > 0 ? `<span class="text-emerald-700 font-bold">Stok: ${p.stock}</span>` : `<span class="text-rose-600 font-bold">Habis</span>`;
                 let btnAction = p.stock > 0 ? `<button type="button" onclick="addToCart('${p.name}', ${p.price}, ${p.stock})" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg text-xs font-bold shadow">+ Keranjang</button>` : `<span class="text-xs text-slate-400 font-semibold">Tidak Tersedia</span>`;
 
+                let convertedPrice = formatMoney(p.price);
+
                 grid.innerHTML += `
                     <div class="bg-white border rounded-2xl p-4 shadow-sm flex items-center gap-4 justify-between">
                         <div class="flex items-center gap-3">
                             ${imgTag}
                             <div class="space-y-1">
                                 <h4 class="font-bold text-slate-900 text-sm">${p.name}</h4>
-                                <div class="text-xs text-slate-600 font-mono">RM ${parseFloat(p.price).toFixed(2)}</div>
+                                <div class="text-xs text-slate-600 font-mono">${convertedPrice}</div>
                                 <div class="text-[11px]">${stockStatus}</div>
                             </div>
                         </div>
@@ -756,9 +813,9 @@
 
             if (cartItems.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400">Keranjang masih kosong. Sila tambah produk di atas.</td></tr>`;
-                document.getElementById('summarySubtotal').innerText = "RM 0.00";
-                document.getElementById('summaryDiscount').innerText = "RM 0.00";
-                document.getElementById('summaryGrandTotal').innerText = "RM 0.00";
+                document.getElementById('summarySubtotal').innerText = formatMoney(0);
+                document.getElementById('summaryDiscount').innerText = formatMoney(0);
+                document.getElementById('summaryGrandTotal').innerText = formatMoney(0);
                 return;
             }
 
@@ -776,7 +833,7 @@
                                 <button type="button" onclick="updateCartQty(${idx}, 1)" class="px-1.5 py-0.5 font-bold text-emerald-600">+</button>
                             </div>
                         </td>
-                        <td class="p-2 text-right font-mono font-semibold">RM ${itemTotal.toFixed(2)}</td>
+                        <td class="p-2 text-right font-mono font-semibold">${formatMoney(itemTotal)}</td>
                         <td class="p-2 text-center">
                             <button type="button" onclick="removeFromCart(${idx})" class="text-rose-500 hover:text-rose-700 font-bold px-2 py-0.5 bg-rose-50 rounded">✕</button>
                         </td>
@@ -789,10 +846,10 @@
             let shippingCost = parseFloat(shipSelect.options[shipSelect.selectedIndex].getAttribute('data-cost')) || 8;
             let grandTotal = (subtotal - discount) + shippingCost;
 
-            document.getElementById('summarySubtotal').innerText = `RM ${subtotal.toFixed(2)}`;
-            document.getElementById('summaryDiscount').innerText = `-RM ${discount.toFixed(2)}`;
-            document.getElementById('summaryShipping').innerText = `RM ${shippingCost.toFixed(2)}`;
-            document.getElementById('summaryGrandTotal').innerText = `RM ${grandTotal.toFixed(2)}`;
+            document.getElementById('summarySubtotal').innerText = formatMoney(subtotal);
+            document.getElementById('summaryDiscount').innerText = `-${formatMoney(discount)}`;
+            document.getElementById('summaryShipping').innerText = formatMoney(shippingCost);
+            document.getElementById('summaryGrandTotal').innerText = formatMoney(grandTotal);
         }
 
         function renderAdminWhatsappOptions() {
@@ -815,6 +872,7 @@
             });
         }
 
+        // ALUR TEPAT: Klik WhatsApp -> Rekod ke Database Admin -> Buka WhatsApp & Munculkan Notifikasi
         function sendPurchaseOrder(adminPhone, adminName) {
             if (!customerProfile) { alert("Sila lengkapkan profil anda."); checkCustomerProfile(); return; }
             if (cartItems.length === 0) { alert("Keranjang kosong!"); return; }
@@ -825,7 +883,7 @@
             let subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.qty), 0);
             let totalUnits = cartItems.reduce((sum, item) => sum + item.qty, 0);
             let discount = totalUnits >= 50 ? subtotal * 0.10 : 0;
-            let shipCost = shipMethod.includes('7') ? 7 : (shipMethod.includes('5') ? 5 : 8);
+            let shipCost = shipMethod.includes('Pos') ? 7 : (shipMethod.includes('Estet') ? 5 : 8);
             let grandTotal = (subtotal - discount) + shipCost;
 
             let invNo = `PO-${Date.now().toString().slice(-6)}`;
@@ -839,34 +897,45 @@
                 customerPhone: customerProfile.phone,
                 customerAddress: customerProfile.address,
                 items: cartItems.map(i => ({ name: i.name, qty: i.qty, price: i.price })),
-                shipping: shipMethod,
+                shipping: `${shipMethod} (${formatMoney(shipCost)})`,
                 payment: payMethod,
                 grandTotal: grandTotal,
-                status: "Sedang Diproses 📦",
+                currency: currentCurrency,
+                status: "Menunggu Pengesahan WA 📦",
                 trackingNo: ""
             };
 
             if (db) {
+                // 1. Rekod ke Database Admin secara automatik sewaktu klik WhatsApp
                 db.collection("customer_orders").add(orderData).then(() => {
-                    let productDetailsText = cartItems.map((item, i) => `${i+1}. ${item.name} (${item.qty} unit x RM ${item.price.toFixed(2)})`).join('\n');
+                    // 2. Munculkan pop-up notifikasi pengesahan
+                    document.getElementById('popupAlertModal').classList.remove('hidden');
 
-                    let message = `*PURCHASE ORDER (PO) RASMI*\n` +
+                    let productDetailsText = cartItems.map((item, i) => `${i+1}. ${item.name} (${item.qty} unit x ${formatMoney(item.price)})`).join('\n');
+
+                    let message = `*PURCHASE ORDER (PO) RASMI (${currentCurrency})*\n` +
                                   `No PO: ${invNo}\n\n` +
                                   `*Maklumat Pelanggan:*\n` +
                                   `• Nama: ${customerProfile.gender} ${customerProfile.name}\n` +
                                   `• Telefon: ${customerProfile.phone}\n` +
                                   `• Alamat: ${customerProfile.address}\n\n` +
                                   `*Pesanan:*\n${productDetailsText}\n\n` +
-                                  `• Subtotal: RM ${subtotal.toFixed(2)}\n` +
-                                  (discount > 0 ? `• Diskon Borong (10%): -RM ${discount.toFixed(2)}\n` : ``) +
-                                  `• Penghantaran: ${shipMethod}\n` +
+                                  `• Subtotal: ${formatMoney(subtotal)}\n` +
+                                  (discount > 0 ? `• Diskon Borong (10%): -${formatMoney(discount)}\n` : ``) +
+                                  `• Penghantaran: ${shipMethod} (${formatMoney(shipCost)})\n` +
                                   `• Pembayaran: ${payMethod}\n\n` +
-                                  `*JUMLAH: RM ${grandTotal.toFixed(2)}*\n\nMohon proses pesanan ini. Terima kasih!`;
+                                  `*JUMLAH (${currentCurrency}): ${formatMoney(grandTotal)}*\n\nMohon proses pesanan ini. Terima kasih!`;
 
                     let cleanPhone = adminPhone.replace(/[^0-9]/g, '');
-                    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`, '_blank');
+                    let waUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(message)}`;
+                    
+                    // 3. Buka WhatsApp pelanggan secara lancar di semua peranti (iPhone/Android/PC)
+                    setTimeout(() => {
+                        window.location.href = waUrl;
+                    }, 1200);
+
                 }).catch(err => {
-                    alert("Gagal menghantar pesanan ke sistem: " + err.message);
+                    alert("Gagal merekod pesanan: " + err.message);
                 });
             } else {
                 alert("Pangkalan data tidak tersambung.");
@@ -880,9 +949,7 @@
                 aiReply: aiResponseText,
                 customerName: customerProfile ? customerProfile.name : "Anonim",
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
-            }).catch((error) => {
-                console.error("Gagal simpan memori global: ", error);
-            });
+            }).catch((error) => { console.error(error); });
         }
 
         function handleCustomerAiQuery(e) {
@@ -920,7 +987,7 @@
                     let cleanDesc = cleanTextForSpeech(rawBenefits);
                     let stockInfo = matchedProduct.stock > 0 ? `Stok tersedia ada ${matchedProduct.stock} unit.` : `Maaf, stok sedang habis.`;
                     
-                    responseText = `Ya, ${customerProfile.gender} ${customerProfile.name}. Mengenai ${matchedProduct.name}, harganya adalah RM ${parseFloat(matchedProduct.price).toFixed(2)}. ${stockInfo} Khasiat utamanya ialah: ${cleanDesc}. Ada lagi yang ingin anda ketahui?`;
+                    responseText = `Ya, ${customerProfile.gender} ${customerProfile.name}. Mengenai ${matchedProduct.name}, harganya adalah ${formatMoney(matchedProduct.price)}. ${stockInfo} Khasiat utamanya ialah: ${cleanDesc}. Ada lagi yang ingin anda ketahui?`;
                 } 
                 else if (lowerInput.includes('lain') || lowerInput.includes('rekomendasi') || lowerInput.includes('cadang') || lowerInput.includes('apa lagi')) {
                     let otherProducts = fetchedProducts.slice(0, 3).map(p => p.name).join(', ');
@@ -939,8 +1006,10 @@
             saveConversationToCloud(text, responseText);
         }
 
-        window.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('DOMContentLoaded', async () => {
+            await fetchLiveExchangeRates();
             applyLanguage();
+            document.getElementById('currencySelector').value = currentCurrency;
             checkCustomerProfile();
             renderCart();
         });
